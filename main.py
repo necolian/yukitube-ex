@@ -312,7 +312,7 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
     
 #infoページのwebsocket通信用
 @app.WebSocket("/ws/info")
-async def ws-info(websocket: WebSocket):
+async def ws_info(websocket: WebSocket):
     try:
         while True:
             data = {"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
