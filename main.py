@@ -204,6 +204,7 @@ def check_cokie(cookie):
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi import Response,Cookie,Request
+from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse,PlainTextResponse
 from fastapi.responses import RedirectResponse as redirect
 from fastapi.middleware.gzip import GZipMiddleware
@@ -308,6 +309,16 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
         return redirect("/")
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
     return template("info.html",{"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]})
+    
+#infoページのwebsocket通信用
+@app.WebSocket("/ws/info")
+async def ws-info(websocket: WebSocket):
+    try:
+        while True:
+            data = {"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
+            await websocket.send_json(data)
+    except WebSocketDisconnect:
+        websocket.close()
 
 @app.get("/suggest")
 def suggest(keyword:str):

@@ -34,14 +34,16 @@
                 <div class="pure-u-2-3">
 
                     <h3>情報 - 現在のapiサーバー</h3><br>
-                    <p>Youtube-API:{{Youtube_API}}</p><br>
-                    <p>Channel-API:{{Channel_API}}</p><br>
-                    <p>Comments-API:{{Comments_API}}</p><br>
+                    <h4 id="connection">サーバーに接続中です…</h4>
+                    <p>Youtube-API:<label id="youtubeapi"></label></p><br>
+                    <p>Channel-API:<label id="channelapi"></label></p><br>
+                    <p>Comment-API:<label id="commentsapi"></label></p><br>
                     
                 </div>
                 
             </div>      
-    <script>$('#searchbox').autocomplete({
+            <script>
+            $('#searchbox').autocomplete({
                 source: function (request, response) {
                     {
                         var url = "/suggest?keyword="+ request.term
@@ -64,9 +66,25 @@
     　　　　　    delay: 300
             });
 
-    function reload() {
-        location.reload();
-    }
+            var getinfo = new WebSocket("/ws/info");
+            getinfo.onopen = function(event) {
+                $("connection").text("接続しました");
+            };
+
+            getinfo.onmessage = function(event) {
+                var gotdata = JSON.perse(event.data);
+                $("youtubeapi").text(gotdata["Youtube_API"]);
+                $("channelapi").text(gotdata["Channel_API"]);
+                $("commentapi").text(gotdata["Comments_API"]);
+            };
+            
+            getinfo.onerror = function(event) {
+                $("connection").text(`エラー:${event.data}`);
+            };
+
+            getinfo.onclose = function(event) {
+                $("connection").text("サーバーとの接続が切断されました");
+            };
 
     setTimeout(function (){location.reload();},5000)
     </script>
