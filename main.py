@@ -5,7 +5,7 @@ import time
 import datetime
 import random
 import os
-from cache import cache
+from cache import cacheZ
 
 
 max_api_wait_time = 3
@@ -318,12 +318,12 @@ async def sse_info(request: Request):
         try:
             while True:
                 # データを送信
-                yield {"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
+                yield json.dumps({"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}) + "\n"
                 await asyncio.sleep(1)  # 1秒ごとにデータを送信
                 if await request.is_disconnected():  # 接続が切れた場合に終了
                     break
         except Exception as e:
-            print("エラー:" + e)
+            print("エラー:", e)
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/suggest")
