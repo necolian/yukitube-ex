@@ -55,7 +55,7 @@
                         xhr.send();
                     }
                 },
-    　　　　　    select: function(event, ui) {
+                select: function(event, ui) {
                         // 候補が選択されたときの処理
                         // テキストボックスに選択したアイテムをセット
                         $("#searchbox").val(ui.item.value);
@@ -63,31 +63,31 @@
                         $("#searchForm").submit(); // フォームを送信
                         return false; // jQuery UIのデフォルトの動作をキャンセル
                 },
-    　　　　　    delay: 300
+                delay: 300
             });
 
-            var websocketURL = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws/info`;
-            var getinfo = new WebSocket(websocketURL);
-            getinfo.onopen = function(event) {
-                $("connection").text("接続しました");
+            const eventSource = new EventSource("/sse/info");
+
+            eventSource.onopen = function(event) {
+                $("connection").text("サーバーに接続しました");
             };
 
-            getinfo.onmessage = function(event) {
-                var gotdata = JSON.parse(event.data);
-                $("youtubeapi").text(gotdata["Youtube_API"]);
-                $("channelapi").text(gotdata["Channel_API"]);
-                $("commentapi").text(gotdata["Comments_API"]);
-            };
-            
-            getinfo.onerror = function(event) {
-                $("connection").text(`エラー:${event}`);
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log(data);
+                $("youtubeapi").text(data.Youtube_API);
+                $("channelapi").text(data.Channel_API);
+                $("commentapi").text(data.Comments_API);
             };
 
-            getinfo.onclose = function(event) {
-                $("connection").text("サーバーとの接続が切断されました");
+            eventSource.onerror = function(event) {
+                $("connection").text("エラー:" + event);
             };
 
-    setTimeout(function (){location.reload();},5000)
+eventSource.onerror = function(event) {
+    console.error("SSE connection error:", event);
+};
+
     </script>
 </body>
 </html>

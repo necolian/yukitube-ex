@@ -211,7 +211,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Union
-
+import asyncio
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/css", StaticFiles(directory="./css"), name="static")
@@ -311,14 +311,14 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
     return template("info.html",{"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]})
     
 #infoページのwebsocket通信用
-@app.websocket("/ws/info")
-async def ws_info(websocket: WebSocket):
-    try:
+@app.get("/sse/info")
+async def sse_info():
+    async def event_stream():
         while True:
-            data = {"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
-            await websocket.send_json(data)
-    except WebSocketDisconnect:
-        websocket.close()
+            # データを送信
+            yield {"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
+            await asyncio.sleep(1)  # 1秒ごとにデータを送信
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/suggest")
 def suggest(keyword:str):
