@@ -315,12 +315,15 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
 @app.get("/sse/info")
 async def sse_info(request: Request):
     async def event_stream():
-        while True:
-            # データを送信
-            yield {"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
-            await asyncio.sleep(1)  # 1秒ごとにデータを送信
-            if await request.is_disconnected():  # 接続が切れた場合に終了
-                break
+        try:
+            while True:
+                # データを送信
+                yield {"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
+                await asyncio.sleep(1)  # 1秒ごとにデータを送信
+                if await request.is_disconnected():  # 接続が切れた場合に終了
+                    break
+        except Exception as e:
+            print("エラー:" + e)
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/suggest")
