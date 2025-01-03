@@ -212,7 +212,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Union
-import asyncio
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/css", StaticFiles(directory="./css"), name="static")
@@ -324,7 +323,6 @@ async def sse_info(request: Request):
                     break
         except Exception as e:
             print("エラー:", e)
-    asyncio.run(event_stream())
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/suggest")
