@@ -5,7 +5,7 @@ import time
 import datetime
 import random
 import os
-from cache import cacheZ
+from cache import cache
 
 
 max_api_wait_time = 3
