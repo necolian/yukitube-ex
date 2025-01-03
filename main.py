@@ -324,6 +324,7 @@ async def sse_info(request: Request):
                     break
         except Exception as e:
             print("エラー:", e)
+    asyncio.run(event_stream())
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/suggest")
