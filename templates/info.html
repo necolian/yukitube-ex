@@ -66,20 +66,21 @@
     　　　　　    delay: 300
             });
 
-            var getinfo = new WebSocket("/ws/info");
+            var websocketURL = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws/info`;
+            var getinfo = new WebSocket(websocketURL);
             getinfo.onopen = function(event) {
                 $("connection").text("接続しました");
             };
 
             getinfo.onmessage = function(event) {
-                var gotdata = JSON.perse(event.data);
+                var gotdata = JSON.parse(event.data);
                 $("youtubeapi").text(gotdata["Youtube_API"]);
                 $("channelapi").text(gotdata["Channel_API"]);
                 $("commentapi").text(gotdata["Comments_API"]);
             };
             
             getinfo.onerror = function(event) {
-                $("connection").text(`エラー:${event.data}`);
+                $("connection").text(`エラー:${event}`);
             };
 
             getinfo.onclose = function(event) {
