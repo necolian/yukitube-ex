@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="/css/ionicons.min.css">
     <link rel="stylesheet" href="/css/default.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <link href="https://vjs.zencdn.net/8.21.1/video-js.min.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/8.21.1/video.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
@@ -35,7 +37,7 @@
                 </div>
             </div>
             <div id="player-container" class="h-box">
-                <video style="outline:none;width:100%;background-color:#000;"  data-setup="{}" playsinline="" poster="/thumbnail?v={{ videoid }}" id="player" controls="" loadedmetadata="settime()" loop="">{% for videourl in videourls%}<source src="{{videourl}}">{% endfor %}</source></video>
+                <video style="outline:none;width:100%;background-color:#000;"  data-setup="{}" playsinline="" poster="/thumbnail?v={{ videoid }}" id="player" class="on-video_player video-js player-style-invidious" controls="" loadedmetadata="settime()" loop="">{% for videourl in videourls%}<source src="{{videourl}}">{% endfor %}</source></video>
             </div>
             <div class="h-box">
                 <h1>{{ videotitle }}</h1>
