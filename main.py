@@ -69,19 +69,19 @@ def apirequest(url,headers,querystring,how):
     else:
         if  time.time() - starttime >= max_time -1:
                 break
-            try:
-                res = requests.get(url, headers=headers, params=querystring)
-                if res.status_code == 200 and is_json(res.text):
-                    print(url)
-                    return res.text
-                else:
-                    print(f"エラー:{url}")
-                    apis.append(api)
-                    apis.remove(api)
-            except:
-                print(f"タイムアウト:{url}")
+        try:
+            res = requests.get(url, headers=headers, params=querystring)
+            if res.status_code == 200 and is_json(res.text):
+                print(url)
+                return res.text
+            else:
+                print(f"エラー:{url}")
                 apis.append(api)
                 apis.remove(api)
+        except:
+            print(f"タイムアウト:{url}")
+            apis.append(api)
+            apis.remove(api)
         raise APItimeoutError("APIがタイムアウトしました")
 
 
