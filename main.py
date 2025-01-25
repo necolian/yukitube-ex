@@ -7,16 +7,30 @@ import random
 import os
 from cache import cache
 
+"""
+api
+    1:rapidapi
+    2:invidious api
+"""
 
 max_api_wait_time = 3
 max_time = 10
-apis = [f"https://yewtu.be/",f"https://invidious.catspeed.cc/",f"https://youtube.privacyplz.org/",r"https://invidious.jing.rocks/",r"https://inv.nadeko.net/",r"https://invidious.nerdvpn.de/",r"https://invidious.privacyredirect.com/",r"https://youtube.076.ne.jp/",r"https://vid.puffyan.us/",r"https://inv.riverside.rocks/",r"https://invidio.xamh.de/",r"https://y.com.sb/",r"https://invidious.sethforprivacy.com/",r"https://invidious.tiekoetter.com/",r"https://inv.bp.projectsegfau.lt/",r"https://inv.vern.cc/",r"https://invidious.nerdvpn.de/",r"https://inv.privacy.com.de/",r"https://invidious.rhyshl.live/",r"https://invidious.slipfox.xyz/",r"https://invidious.weblibre.org/",r"https://invidious.namazso.eu/"]
+apis = [f"https://invidious.catspeed.cc/",f"https://youtube.privacyplz.org/",r"https://invidious.jing.rocks/",r"https://inv.nadeko.net/",r"https://invidious.nerdvpn.de/",r"https://invidious.privacyredirect.com/",r"https://youtube.076.ne.jp/",r"https://vid.puffyan.us/",r"https://inv.riverside.rocks/",r"https://invidio.xamh.de/",r"https://y.com.sb/",r"https://invidious.sethforprivacy.com/",r"https://invidious.tiekoetter.com/",r"https://inv.bp.projectsegfau.lt/",r"https://inv.vern.cc/",r"https://invidious.nerdvpn.de/",r"https://inv.privacy.com.de/",r"https://invidious.rhyshl.live/",r"https://invidious.slipfox.xyz/",r"https://invidious.weblibre.org/",r"https://invidious.namazso.eu/"]
 url = requests.get(r'https://raw.githubusercontent.com/mochidukiyukimi/yuki-youtube-instance/main/instance.txt').text.rstrip()
 version = "1.0"
 
+apivideos = {"ytstream":"https://ytstream-download-youtube-videos.p.rapidapi.com/dl","related":"https://youtube-v31.p.rapidapi.com/search"}
+rapidapi_apikey = os.getenv("rapidapi_apikey","couldn't find")
 apichannels = []
 apicomments = []
+video_quolity = ["1080p"]
 [[apichannels.append(i),apicomments.append(i)] for i in apis]
+
+if rapidapi_apikey == "couldn't find":
+    rapidapi = False
+else:
+    rapidapi = True
+
 class APItimeoutError(Exception):
     pass
 
@@ -29,27 +43,47 @@ def is_json(json_str):
         pass
     return result
 
-def apirequest(url):
+def apirequest(url,headers,querystring,how):
+    how = 2 if how is None else how
     global apis
     global max_time
     starttime = time.time()
-    for api in apis:
-        if  time.time() - starttime >= max_time -1:
-            break
-        try:
-            res = requests.get(api+url,timeout=max_api_wait_time)
-            if res.status_code == 200 and is_json(res.text):
-                print(api+url)
-                return res.text
-            else:
-                print(f"エラー:{api}")
+    if how == 2:
+        for api in apis:
+            if  time.time() - starttime >= max_time -1:
+                break
+            try:
+                res = requests.get(api+url,timeout=max_api_wait_time)
+                if res.status_code == 200 and is_json(res.text):
+                    print(api+url)
+                    return res.text
+                else:
+                    print(f"エラー:{api}")
+                    apis.append(api)
+                    apis.remove(api)
+            except:
+                print(f"タイムアウト:{api}")
                 apis.append(api)
                 apis.remove(api)
-        except:
-            print(f"タイムアウト:{api}")
-            apis.append(api)
-            apis.remove(api)
-    raise APItimeoutError("APIがタイムアウトしました")
+        raise APItimeoutError("APIがタイムアウトしました")
+    else:
+        if  time.time() - starttime >= max_time -1:
+                break
+            try:
+                res = requests.get(url, headers=headers, params=querystring)
+                if res.status_code == 200 and is_json(res.text):
+                    print(url)
+                    return res.text
+                else:
+                    print(f"エラー:{url}")
+                    apis.append(api)
+                    apis.remove(api)
+            except:
+                print(f"タイムアウト:{url}")
+                apis.append(api)
+                apis.remove(api)
+        raise APItimeoutError("APIがタイムアウトしました")
+
 
 def apichannelrequest(url):
     global apichannels
@@ -98,12 +132,20 @@ def get_info(request):
     global version
     return json.dumps([version,os.environ.get('RENDER_EXTERNAL_URL'),str(request.scope["headers"]),str(request.scope['router'])[39:-2]])
 
-def get_data(videoid):
+def get_data(videoid,how):
     global logs
-    t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
-    if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
-        return "error"
-    return [{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]
+    how = 2 if how is None else how
+    if how == 2:
+        t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
+        if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
+            return "error"
+        return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
+    else:
+        t = json.loads(apirequest(apivideos["ytstream"],f'{"x-rapidapi-key": "{rapidapi_apikey}","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}',f'{"id":"{videoid}"}',1))
+        if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
+            return "error"
+        r = json.loads(apirequest(apivideos["related"],f'{"x-rapidapi-key": "{rapidapi_apikey}","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}',f'{"relatedToVideoId":"{videoid}","part":"id,snippet","type":"video","maxResults":"6"}',1))
+        return return [{"id":i["id"]["videoid"],"title":i["snippet"]["title"],"authorId":i["snippet"]["channelId"],"author":i["snippet"]["channelTitle"]} for i in r["items"] , i["url"] for i in t["adaptiveFormats"].values() if i["qualityLabel"] in video_quolity and "video/mp4" in i["mimeType"]
 
 def get_search(q, page):
     errorlog = []
@@ -204,14 +246,13 @@ def check_cokie(cookie):
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi import Response,Cookie,Request
-from fastapi import WebSocket, WebSocketDisconnect
-from fastapi.responses import StreamingResponse
 from fastapi.responses import HTMLResponse,PlainTextResponse
 from fastapi.responses import RedirectResponse as redirect
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Union
+
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/css", StaticFiles(directory="./css"), name="static")
@@ -309,21 +350,6 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
         return redirect("/")
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
     return template("info.html",{"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]})
-    
-#infoページのSSE通信用
-@app.get("/sse/info")
-async def sse_info(request: Request):
-    async def event_stream():
-        try:
-            while True:
-                # データを送信
-                yield {"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
-                await asyncio.sleep(1)  # 1秒ごとにデータを送信
-                if await request.is_disconnected():  # 接続が切れた場合に終了
-                    break
-        except Exception as e:
-            print("エラー:", e)
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/suggest")
 def suggest(keyword:str):
