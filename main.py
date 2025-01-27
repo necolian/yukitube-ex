@@ -74,7 +74,7 @@ def apirequest(url,headers,querystring,how):
                 return res.text
             else:
                 print(f"エラー:{url}")
-        except (e):
+        except Exception as e:
             print(f"エラー:{url},{e}")
         raise APItimeoutError("APIがタイムアウトしました")
 
