@@ -127,7 +127,6 @@ def apicommentsrequest(url):
             apicomments.remove(api)
     raise APItimeoutError("APIがタイムアウトしました")
 
-
 def get_info(request):
     global version
     return json.dumps([version,os.environ.get('RENDER_EXTERNAL_URL'),str(request.scope["headers"]),str(request.scope['router'])[39:-2]])
@@ -136,7 +135,7 @@ def get_data(videoid,how):
     global logs
     how = 2 if how is None else how
     if how == 2:
-        t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid),,,2))
+        t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid),"","",2))
         if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
             return "error"
         return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
@@ -151,7 +150,7 @@ def get_data(videoid,how):
 def get_search(q, page):
     errorlog = []
     try:
-        response = apirequest(fr"api/v1/search?q={urllib.parse.quote(q)}&page={page}&hl=jp",,,2)
+        response = apirequest(fr"api/v1/search?q={urllib.parse.quote(q)}&page={page}&hl=jp","","",2)
         t = json.loads(response)
 
         results = []
@@ -215,7 +214,7 @@ def get_channel(channelid):
     return [[{"title":i["title"],"id":i["videoId"],"authorId":t["authorId"],"author":t["author"],"published":i["publishedText"],"type":"video"} for i in t["latestVideos"]],{"channelname":t["author"],"channelicon":t["authorThumbnails"][-1]["url"],"channelprofile":t["descriptionHtml"]}]
 
 def get_playlist(listid,page):
-    t = json.loads(apirequest(r"/api/v1/playlists/"+ urllib.parse.quote(listid)+"?page="+urllib.parse.quote(page),,,2))["videos"]
+    t = json.loads(apirequest(r"/api/v1/playlists/"+ urllib.parse.quote(listid)+"?page="+urllib.parse.quote(page),"","",2))["videos"]
     return [{"title":i["title"],"id":i["videoId"],"authorId":i["authorId"],"author":i["author"],"type":"video"} for i in t]
 
 def get_comments(videoid):
@@ -288,6 +287,8 @@ def video(v:str,response: Response,request: Request,yuki: Union[str] = Cookie(No
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
     return template('video.html', {"request": request,"videoid":videoid,"videourls":t[1],"res":t[0],"description":t[2],"videotitle":t[3],"authorid":t[4],"authoricon":t[6],"author":t[5],"proxy":proxy})
 
+proxy})
+
 @app.get("/search", response_class=HTMLResponse)
 def search(q: str, response: Response, request: Request, page: Union[int, None] = 1, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # クッキーの検証
@@ -301,7 +302,7 @@ def search(q: str, response: Response, request: Request, page: Union[int, None] 
         # resultsがdict型の場合の処理
         if isinstance(results, dict):
             error_detail = results.get("error", "Unknown error occurred.")
-            raise APItimeoutError()
+            raise HTTPException(status_code=500, detail=f"Search API error: {error_detail}")
             return template("APIwait.html",{"request": request},status_code=500)
 
         # 検索成功時のテンプレスキーマに結果を渡す
@@ -312,7 +313,7 @@ def search(q: str, response: Response, request: Request, page: Union[int, None] 
         raise e
     except Exception as e:
         # 他の予期しない例外を処理
-        raise APItimeoutError()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/hashtag/{tag}")
 def search(tag:str,response: Response,request: Request,page:Union[int,None]=1,yuki: Union[str] = Cookie(None)):
