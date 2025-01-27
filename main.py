@@ -281,7 +281,7 @@ def video(v:str,response: Response,request: Request,yuki: Union[str] = Cookie(No
         return redirect("/")
     response.set_cookie(key="yuki", value="True",max_age=7*24*60*60)
     videoid = v
-    t = get_data(videoid)
+    t = get_data(videoid,1)
     if (t == "error"):
             return template("error.html",{"request": request,"status_code":"502 - Bad Gateway","message": "ビデオ取得時のAPIエラー、再読み込みしてください。","home":False},status_code=502)
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
