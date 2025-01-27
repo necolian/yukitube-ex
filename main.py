@@ -145,7 +145,8 @@ def get_data(videoid,how):
         if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
             return "error"
         r = json.loads(apirequest(apivideos["related"],f'{"x-rapidapi-key": "{rapidapi_apikey}","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}',f'{"relatedToVideoId":"{videoid}","part":"id,snippet","type":"video","maxResults":"6"}',1))
-        return [[{"id":i["id"]["videoid"],"title":i["snippet"]["title"],"authorId":i["snippet"]["channelId"],"author":i["snippet"]["channelTitle"]} for i in r["items"]] , [i["url"] for i in t["adaptiveFormats"] if i["qualityLabel"] in video_quality and "video/mp4" in i["mimeType"]],t["description"].replace("\n","<br>"),t["title"],t["channelId"],t["channelTitle"]]
+        c = json.loads(apichannelrequest(r"api/v1/channels/"+ urllib.parse.quote(t["channelid"])))
+        return [[{"id":i["id"]["videoid"],"title":i["snippet"]["title"],"authorId":i["snippet"]["channelId"],"author":i["snippet"]["channelTitle"]} for i in r["items"]] , [i["url"] for i in t["adaptiveFormats"] if i["qualityLabel"] in video_quality and "video/mp4" in i["mimeType"]],t["description"].replace("\n","<br>"),t["title"],t["channelId"],t["channelTitle"],c["authorThumbnails"][-1]["url"]]
 
 def get_search(q, page):
     errorlog = []
@@ -167,7 +168,7 @@ def get_search(q, page):
         raise ValueError("Failed to decode JSON response.")
     except Exception as e:
         errorlog.append(f"API request error: {str(e)}")
-        return {"error": "API request error."}
+        raise APItimeoutError()
 
 def load_search(i):
     if i["type"] == "video":
