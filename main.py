@@ -140,11 +140,11 @@ def get_data(videoid,how):
             return "error"
         return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
     else:
-        t = json.loads(apirequest(apivideos["ytstream"],'{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}',f'{"id":"' + videoid + '"}',1))
+        t = json.loads(apirequest(apivideos["ytstream"],'{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}','{"id":"' + videoid + '"}',1))
         print("t:" + t)
         if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
             return "error"
-        r = json.loads(apirequest(apivideos["related"],'{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}',f'{"relatedToVideoId":"' + videoid + '","part":"id,snippet","type":"video","maxResults":"6"}',1))
+        r = json.loads(apirequest(apivideos["related"],'{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}','{"relatedToVideoId":"' + videoid + '","part":"id,snippet","type":"video","maxResults":"6"}',1))
         c = json.loads(apichannelrequest(r"api/v1/channels/"+ urllib.parse.quote(t["channelid"])))
         print(f"r:{r},c:{c}")
         return [[{"id":i["id"]["videoid"],"title":i["snippet"]["title"],"authorId":i["snippet"]["channelId"],"author":i["snippet"]["channelTitle"]} for i in r["items"]] , [i["url"] for i in t["adaptiveFormats"] if i["qualityLabel"] in video_quality and "video/mp4" in i["mimeType"]],t["description"].replace("\n","<br>"),t["title"],t["channelId"],t["channelTitle"],c["authorThumbnails"][-1]["url"]]
