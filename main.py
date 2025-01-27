@@ -68,8 +68,6 @@ def apirequest(url,headers,querystring,how):
         raise APItimeoutError("APIがタイムアウトしました")
     else:
         try:
-            if  time.time() - starttime >= max_time -1:
-                raise APItimeoutError("APIがタイムアウトしました")
             res = requests.get(url, headers=headers, params=querystring)
             if res.status_code == 200 and is_json(res.text):
                 print(url)
@@ -78,7 +76,7 @@ def apirequest(url,headers,querystring,how):
                 print(f"エラー:{url}")
         except:
             print(f"タイムアウト:{url}")
-            raise APItimeoutError("APIがタイムアウトしました")
+        raise APItimeoutError("APIがタイムアウトしました")
 
 
 def apichannelrequest(url):
