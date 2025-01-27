@@ -67,9 +67,9 @@ def apirequest(url,headers,querystring,how):
                 apis.remove(api)
         raise APItimeoutError("APIがタイムアウトしました")
     else:
-        if  time.time() - starttime >= max_time -1:
-            break
         try:
+            if  time.time() - starttime >= max_time -1:
+                raise APItimeoutError("APIがタイムアウトしました")
             res = requests.get(url, headers=headers, params=querystring)
             if res.status_code == 200 and is_json(res.text):
                 print(url)
