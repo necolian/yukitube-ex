@@ -76,10 +76,6 @@ def apirequest(url,headers,querystring,how):
                 print(f"エラー:{url}")
         except Exception as e:
             print(f"エラー:{url},{e}")
-            print(type(url))
-            print(type(headers))
-            print(type(querystring))
-            print(type(how))
         raise APItimeoutError("APIがタイムアウトしました")
 
 
@@ -138,7 +134,7 @@ def get_data(videoid,how):
             return "error"
         return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
     else:
-        t = json.loads(apirequest(apivideos["ytstream"],'{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}','{"id":"' + videoid + '"}',1))
+        t = json.loads(apirequest(apivideos["ytstream"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}'),json.loads('{"id":"' + videoid + '"}',1)))
         print("t:" + t)
         if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
             return "error"
