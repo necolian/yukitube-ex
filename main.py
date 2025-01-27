@@ -78,7 +78,7 @@ def apirequest(url,headers,querystring,how):
                 print(f"エラー:{url}")
         except:
             print(f"タイムアウト:{url}")
-        raise APItimeoutError("APIがタイムアウトしました")
+            raise APItimeoutError("APIがタイムアウトしました")
 
 
 def apichannelrequest(url):
