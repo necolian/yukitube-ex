@@ -19,7 +19,7 @@ apis = [f"https://invidious.catspeed.cc/",f"https://youtube.privacyplz.org/",r"h
 url = requests.get(r'https://raw.githubusercontent.com/mochidukiyukimi/yuki-youtube-instance/main/instance.txt').text.rstrip()
 version = "1.0"
 
-apivideos = {"ytstream":"https://ytstream-download-youtube-videos.p.rapidapi.com/dl","related":"https://youtube-v31.p.rapidapi.com/search"}
+apivideos = {"ytstream":"https://ytstream-download-youtube-videos.p.rapidapi.com/dl","related":"https://youtube-v31.p.rapidapi.com/search","info":"https://youtube-data-api-v33.p.rapidapi.com"}
 rapidapi_apikey = os.getenv("rapidapi_apikey","couldn't find")
 apichannels = []
 apicomments = []
@@ -139,7 +139,7 @@ def get_data(videoid,how):
         if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
             return "error"
         r = json.loads(apirequest(apivideos["related"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}'),json.loads('{"relatedToVideoId":"' + videoid + '","part":"id,snippet","type":"video","maxResults":"6"}'),1))
-        c = json.loads(apichannelrequest(r"api/v1/channels/"+ urllib.parse.quote(t["channelid"])))
+        c = json.loads(apirequest(f"{apivideos['info']}/channels",json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-data-api-v33.p.rapidapi.com"}'),json.loads('{"part":"snippet","key":"AIzaS9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6a7b8c9dTr","id":"' + t["channelId"] + '"}'),1))
         print(f"r:{json.dumps(r)},c:{json.dumps(c)}")
         return [[{"id":i["id"]["videoid"],"title":i["snippet"]["title"],"authorId":i["snippet"]["channelId"],"author":i["snippet"]["channelTitle"]} for i in r["items"]] , [i["url"] for i in t["adaptiveFormats"] if i["qualityLabel"] in video_quality and "video/mp4" in i["mimeType"]],t["description"].replace("\n","<br>"),t["title"],t["channelId"],t["channelTitle"],c["authorThumbnails"][-1]["url"]]
 
