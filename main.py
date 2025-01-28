@@ -160,7 +160,7 @@ def get_data(videoid,how):
         t["channelTitle"],
         c["items"][0]["snippet"]["thumbnails"]["default"]["url"]
         ]
-        print hentou
+        print(hentou)
         return hentou
 
 def get_search(q, page):
