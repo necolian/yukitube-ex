@@ -151,8 +151,7 @@ def get_data(videoid,how):
                 } for i in r["items"]
             ],
             [
-                i["url"] for i in t["adaptiveFormats"]
-                if "qualityLabel" in i and i["qualityLabel"] in video_quality and "video/mp4" in i.get("mimeType", "")
+                t["formats"]["0"]["url"]
             ],
         t["description"].replace("\n", "<br>"),
         t["title"],
