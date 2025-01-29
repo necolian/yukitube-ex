@@ -23,7 +23,7 @@ apivideos = {"ytstream":"https://ytstream-download-youtube-videos.p.rapidapi.com
 rapidapi_apikey = os.getenv("rapidapi_apikey","couldn't find")
 apichannels = []
 apicomments = []
-video_quality = ["480p","360p","144p"]
+video_quality = ["360p"]
 [[apichannels.append(i),apicomments.append(i)] for i in apis]
 
 if rapidapi_apikey == "couldn't find":
