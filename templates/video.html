@@ -73,6 +73,7 @@
                     <!--自動再生<input type="checkbox" id="autonext" onchange="checkautoplay()"><br>-->
                     ループ再生<input type="checkbox" id="loop" onchange="changeloop()">
                     {% for re in res %}
+                    {% if loop.index <= 5 %}
                     <a href="/watch?v={{ re['id'] }}">
 
                         <div class="thumbnail">
@@ -80,7 +81,7 @@
                         </div>
                         <p style="width:100%">{{re["title"]}}</p>
                     </a><br>
-                    <a href="/channel/{{re['authorId']}}">{{re["author"]}}</a>{% endfor %}
+                    <a href="/channel/{{re['authorId']}}">{{re["author"]}}</a>{% endif %}{% endfor %}
                 </div>
             </div>
         </div>
