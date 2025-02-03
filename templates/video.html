@@ -38,7 +38,7 @@
             </div>
             <div id="player-container" class="h-box">
                 <!-- <video style="outline:none;width:100%;background-color:#000;"  data-setup="{}" playsinline="" poster="/thumbnail?v={{ videoid }}" id="player" class="on-video_player video-js player-style-invidious" controls="" loadedmetadata="settime()" loop="">{% for videourl in videourls%}<source src="{{videourl}}">{% endfor %}</source></video> -->
-                <iframe frameborder="0" scrolling="no" style="width: 100%;" src="{{videourls[0]}}"></iframe>
+                <iframe id="player" frameborder="0" scrolling="no" style="width: 100%; height: 100%;" src="{{videourls[0]}}"></iframe>
             </div>
             <div class="h-box">
                 <h1>{{ videotitle }}</h1>
