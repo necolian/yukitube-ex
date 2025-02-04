@@ -7,16 +7,30 @@ import random
 import os
 from cache import cache
 
+"""
+api
+    1:rapidapi
+    2:invidious api
+"""
 
-max_api_wait_time = 3
-max_time = 10
+max_api_wait_time = 10
+max_time = 20
 apis = [f"https://invidious.catspeed.cc/",f"https://youtube.privacyplz.org/",r"https://invidious.jing.rocks/",r"https://inv.nadeko.net/",r"https://invidious.nerdvpn.de/",r"https://invidious.privacyredirect.com/",r"https://youtube.076.ne.jp/",r"https://vid.puffyan.us/",r"https://inv.riverside.rocks/",r"https://invidio.xamh.de/",r"https://y.com.sb/",r"https://invidious.sethforprivacy.com/",r"https://invidious.tiekoetter.com/",r"https://inv.bp.projectsegfau.lt/",r"https://inv.vern.cc/",r"https://invidious.nerdvpn.de/",r"https://inv.privacy.com.de/",r"https://invidious.rhyshl.live/",r"https://invidious.slipfox.xyz/",r"https://invidious.weblibre.org/",r"https://invidious.namazso.eu/"]
 url = requests.get(r'https://raw.githubusercontent.com/mochidukiyukimi/yuki-youtube-instance/main/instance.txt').text.rstrip()
 version = "1.0"
 
+apivideos = {"ytstream":"https://ytstream-download-youtube-videos.p.rapidapi.com/dl","related":"https://youtube-v31.p.rapidapi.com/search","info":"https://youtube-data-api-v33.p.rapidapi.com"}
+rapidapi_apikey = os.getenv("rapidapi_apikey","couldn't find")
 apichannels = []
 apicomments = []
+video_quality = ["360p"]
 [[apichannels.append(i),apicomments.append(i)] for i in apis]
+
+if rapidapi_apikey == "couldn't find":
+    rapidapi = False
+else:
+    rapidapi = True
+
 class APItimeoutError(Exception):
     pass
 
@@ -29,27 +43,41 @@ def is_json(json_str):
         pass
     return result
 
-def apirequest(url):
+def apirequest(url,headers,querystring,how):
+    how = 2 if how is None else how
     global apis
     global max_time
     starttime = time.time()
-    for api in apis:
-        if  time.time() - starttime >= max_time -1:
-            break
-        try:
-            res = requests.get(api+url,timeout=max_api_wait_time)
-            if res.status_code == 200 and is_json(res.text):
-                print(api+url)
-                return res.text
-            else:
-                print(f"エラー:{api}")
+    if how == 2:
+        for api in apis:
+            if  time.time() - starttime >= max_time -1:
+                break
+            try:
+                res = requests.get(api+url,timeout=max_api_wait_time)
+                if res.status_code == 200 and is_json(res.text):
+                    print(api+url)
+                    return res.text
+                else:
+                    print(f"エラー:{api}")
+                    apis.append(api)
+                    apis.remove(api)
+            except:
+                print(f"タイムアウト:{api}")
                 apis.append(api)
                 apis.remove(api)
-        except:
-            print(f"タイムアウト:{api}")
-            apis.append(api)
-            apis.remove(api)
-    raise APItimeoutError("APIがタイムアウトしました")
+        raise APItimeoutError("APIがタイムアウトしました")
+    else:
+        try:
+            res = requests.get(url, headers=headers, params=querystring)
+            if res.status_code == 200 and is_json(res.text):
+                print(url)
+                return res.text
+            else:
+                print(f"エラー:{url}")
+        except Exception as e:
+            print(f"エラー:{url},{e}")
+        raise APItimeoutError("APIがタイムアウトしました")
+
 
 def apichannelrequest(url):
     global apichannels
@@ -93,22 +121,51 @@ def apicommentsrequest(url):
             apicomments.remove(api)
     raise APItimeoutError("APIがタイムアウトしました")
 
-
 def get_info(request):
     global version
     return json.dumps([version,os.environ.get('RENDER_EXTERNAL_URL'),str(request.scope["headers"]),str(request.scope['router'])[39:-2]])
 
-def get_data(videoid):
+def get_data(videoid,how):
     global logs
-    t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
-    if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
-        return "error"
-    return [{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]
+    how = True if how is None else how
+    if how:
+        t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid),"","",2))
+        if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
+            return "error"
+        return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
+    else:
+        t = json.loads(apirequest(apivideos["ytstream"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}'),json.loads('{"id":"' + videoid + '"}'),1))
+        print("t:" + json.dumps(t))
+        if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
+            return "error"
+        r = json.loads(apirequest(apivideos["related"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}'),json.loads('{"relatedToVideoId":"' + videoid + '","part":"id,snippet","type":"video","maxResults":"6"}'),1))
+        c = json.loads(apirequest(f"{apivideos['info']}/channels",json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-data-api-v33.p.rapidapi.com"}'),json.loads('{"part":"snippet","key":"AIzaS9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6a7b8c9dTr","id":"' + t["channelId"] + '"}'),1))
+        print(f"r:{json.dumps(r)},c:{json.dumps(c)}")
+        hentou = [
+            [
+                {
+                    "id": i["id"]["videoId"],
+                    "title": i["snippet"]["title"],
+                    "authorId": i["snippet"]["channelId"],
+                    "author": i["snippet"]["channelTitle"]
+                } for i in r["items"]
+            ],
+            [
+                t["formats"][0]["url"]
+            ],
+        t["description"].replace("\n", "<br>"),
+        t["title"],
+        t["channelId"],
+        t["channelTitle"],
+        c["items"][0]["snippet"]["thumbnails"]["default"]["url"]
+        ]
+        print(hentou)
+        return hentou
 
 def get_search(q, page):
     errorlog = []
     try:
-        response = apirequest(fr"api/v1/search?q={urllib.parse.quote(q)}&page={page}&hl=jp")
+        response = apirequest(fr"api/v1/search?q={urllib.parse.quote(q)}&page={page}&hl=jp","","",2)
         t = json.loads(response)
 
         results = []
@@ -125,7 +182,7 @@ def get_search(q, page):
         raise ValueError("Failed to decode JSON response.")
     except Exception as e:
         errorlog.append(f"API request error: {str(e)}")
-        return {"error": "API request error."}
+        raise APItimeoutError()
 
 def load_search(i):
     if i["type"] == "video":
@@ -172,7 +229,7 @@ def get_channel(channelid):
     return [[{"title":i["title"],"id":i["videoId"],"authorId":t["authorId"],"author":t["author"],"published":i["publishedText"],"type":"video"} for i in t["latestVideos"]],{"channelname":t["author"],"channelicon":t["authorThumbnails"][-1]["url"],"channelprofile":t["descriptionHtml"]}]
 
 def get_playlist(listid,page):
-    t = json.loads(apirequest(r"/api/v1/playlists/"+ urllib.parse.quote(listid)+"?page="+urllib.parse.quote(page)))["videos"]
+    t = json.loads(apirequest(r"/api/v1/playlists/"+ urllib.parse.quote(listid)+"?page="+urllib.parse.quote(page),"","",2))["videos"]
     return [{"title":i["title"],"id":i["videoId"],"authorId":i["authorId"],"author":i["author"],"type":"video"} for i in t]
 
 def get_comments(videoid):
@@ -239,7 +296,7 @@ def video(v:str,response: Response,request: Request,yuki: Union[str] = Cookie(No
         return redirect("/")
     response.set_cookie(key="yuki", value="True",max_age=7*24*60*60)
     videoid = v
-    t = get_data(videoid)
+    t = get_data(videoid,rapidapi)
     if (t == "error"):
             return template("error.html",{"request": request,"status_code":"502 - Bad Gateway","message": "ビデオ取得時のAPIエラー、再読み込みしてください。","home":False},status_code=502)
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)

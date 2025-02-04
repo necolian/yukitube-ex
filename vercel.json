@@ -10,6 +10,5 @@
       "src": "/(.*)",
       "dest": "main.py"
     }
-  ],
-  "ignoreCommand":"bash ignore-build-step.sh"
+  ]
 }

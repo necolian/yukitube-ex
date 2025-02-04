@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="/css/ionicons.min.css">
     <link rel="stylesheet" href="/css/default.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <link href="https://vjs.zencdn.net/8.21.1/video-js.min.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/8.21.1/video.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
@@ -35,7 +37,9 @@
                 </div>
             </div>
             <div id="player-container" class="h-box">
-                <video style="outline:none;width:100%;background-color:#000;"  data-setup="{}" playsinline="" poster="/thumbnail?v={{ videoid }}" id="player" controls="" loadedmetadata="settime()" loop="">{% for videourl in videourls%}<source src="{{videourl}}">{% endfor %}</source></video>
+                <!-- <video style="outline:none;width:100%;background-color:#000;"  data-setup="{}" playsinline="" poster="/thumbnail?v={{ videoid }}" id="player" class="on-video_player video-js player-style-invidious" controls="" loadedmetadata="settime()" loop="">{% for videourl in videourls%}<source src=" ここにURL ">{% endfor %}</source></video> -->
+                <!-- <iframe id="player" frameborder="0" scrolling="no" style="width: 100%;" src="{{videourls[0]}}"></iframe> -->
+                <a onclick="window.open('{{videourls[0]}}');">動画はここから</a>
             </div>
             <div class="h-box">
                 <h1>{{ videotitle }}</h1>
@@ -71,6 +75,7 @@
                     <!--自動再生<input type="checkbox" id="autonext" onchange="checkautoplay()"><br>-->
                     ループ再生<input type="checkbox" id="loop" onchange="changeloop()">
                     {% for re in res %}
+                    {% if loop.index <= 5 %}
                     <a href="/watch?v={{ re['id'] }}">
 
                         <div class="thumbnail">
@@ -78,7 +83,7 @@
                         </div>
                         <p style="width:100%">{{re["title"]}}</p>
                     </a><br>
-                    <a href="/channel/{{re['authorId']}}">{{re["author"]}}</a>{% endfor %}
+                    <a href="/channel/{{re['authorId']}}">{{re["author"]}}</a>{% endif %}{% endfor %}
                 </div>
             </div>
         </div>
@@ -96,21 +101,29 @@
         //function autopage(){if (document.getElementById('autonext').checked) {sleep(5000);document.cookie = "autonext=true;max-age=2592000;";location.href = "/watch?v={{res[0]["id"]}}";}else{document.cookie = "autonext=false;max-age=2592000;";}}
         function getUrlQueries() { var queryStr = window.location.search.slice(1); queries = {}; queryStr.split('&').forEach(function (queryStr) { var queryArr = queryStr.split('='); queries[queryArr[0]] = queryArr[1]; }); return queries; }
         if (typeof getUrlQueries().t === "undefined") { t = 0; } else { document.getElementById("player").currentTime = getUrlQueries().t; }
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "/comments?v=" + getUrlQueries().v);
-        xhr.onload = function () {
-            if (xhr.status != 500) {
-                document.getElementById('comments').innerHTML = xhr.responseText;
+
+        //コメント取得
+        var getOK = true;
+        while(getOK) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/comments?v=" + getUrlQueries().v);
+            xhr.onload = function () {
+                if (xhr.status != 500) {
+                    document.getElementById('comments').innerHTML = xhr.responseText;
+                    getOK = false;
+                }else {
+                    document.getElementById('comments').innerHTML = "エラーが発生しました。しばらくお待ちください。";
+                }
             }
-            else { document.getElementById('comments').innerHTML = "エラーが発生しました。再読み込みを試してください"; }
-        };
-        xhr.send();
+            xhr.send();
+        }
+
         if (document.domain != "yukigennumber.ddo.jp") { document.getElementById("ads_box").innerHTML = ""; }
         document.getElementById("player").style.maxHeight = document.documentElement.clientHeight * 0.8 + "px";
 
         document.onkeydown = keydown;
         function keydown(key) {
-            var v = document.getElementById("player");
+            var v = document.getElementById("player");¥
 
             if (key.keyCode == 32 || key.keyCode == 75) {
                 if (v.paused == true) {
@@ -142,7 +155,9 @@
                         return false; // jQuery UIのデフォルトの動作をキャンセル
                 },
     　　　　　    delay: 300
-            });</script>
+            });
+        
+    </script>
 </body>
 
 </html>

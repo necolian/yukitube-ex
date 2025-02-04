@@ -34,14 +34,16 @@
                 <div class="pure-u-2-3">
 
                     <h3>情報 - 現在のapiサーバー</h3><br>
-                    <p>Youtube-API:{{Youtube_API}}</p><br>
-                    <p>Channel-API:{{Channel_API}}</p><br>
-                    <p>Comments-API:{{Comments_API}}</p><br>
+                    <h4 id="connection">サーバーに接続中です…</h4>
+                    <p>Youtube-API:<label id="youtubeapi"></label></p><br>
+                    <p>Channel-API:<label id="channelapi"></label></p><br>
+                    <p>Comment-API:<label id="commentsapi"></label></p><br>
                     
                 </div>
                 
             </div>      
-    <script>$('#searchbox').autocomplete({
+            <script>
+            $('#searchbox').autocomplete({
                 source: function (request, response) {
                     {
                         var url = "/suggest?keyword="+ request.term
@@ -53,7 +55,7 @@
                         xhr.send();
                     }
                 },
-    　　　　　    select: function(event, ui) {
+                select: function(event, ui) {
                         // 候補が選択されたときの処理
                         // テキストボックスに選択したアイテムをセット
                         $("#searchbox").val(ui.item.value);
@@ -61,14 +63,35 @@
                         $("#searchForm").submit(); // フォームを送信
                         return false; // jQuery UIのデフォルトの動作をキャンセル
                 },
-    　　　　　    delay: 300
+                delay: 300
             });
 
-    function reload() {
-        location.reload();
-    }
+            try {
+                const eventSource = new EventSource("/sse/info");
+            }catch(e){
+                $("connection").text("サーバーへの接続に失敗しました");
+            }
 
-    setTimeout(function (){location.reload();},5000)
+            eventSource.onopen = function(event) {
+                $("connection").text("サーバーに接続しました");
+            };
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log(data);
+                $("youtubeapi").text(data.Youtube_API);
+                $("channelapi").text(data.Channel_API);
+                $("commentapi").text(data.Comments_API);
+            };
+
+            eventSource.onerror = function(event) {
+                $("connection").text("エラー:" + event);
+            };
+
+eventSource.onerror = function(event) {
+    console.error("SSE connection error:", event);
+};
+
     </script>
 </body>
 </html>
