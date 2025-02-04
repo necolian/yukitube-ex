@@ -127,8 +127,8 @@ def get_info(request):
 
 def get_data(videoid,how):
     global logs
-    how = 2 if how is None else how
-    if how == 2:
+    how = True if how is None else how
+    if how:
         t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid),"","",2))
         if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
             return "error"
@@ -296,7 +296,7 @@ def video(v:str,response: Response,request: Request,yuki: Union[str] = Cookie(No
         return redirect("/")
     response.set_cookie(key="yuki", value="True",max_age=7*24*60*60)
     videoid = v
-    t = get_data(videoid,1)
+    t = get_data(videoid,rapidapi)
     if (t == "error"):
             return template("error.html",{"request": request,"status_code":"502 - Bad Gateway","message": "ビデオ取得時のAPIエラー、再読み込みしてください。","home":False},status_code=502)
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
