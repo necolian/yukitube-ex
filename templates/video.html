@@ -38,7 +38,8 @@
             </div>
             <div id="player-container" class="h-box">
                 <!-- <video style="outline:none;width:100%;background-color:#000;"  data-setup="{}" playsinline="" poster="/thumbnail?v={{ videoid }}" id="player" class="on-video_player video-js player-style-invidious" controls="" loadedmetadata="settime()" loop="">{% for videourl in videourls%}<source src=" ここにURL ">{% endfor %}</source></video> -->
-                <iframe id="player" frameborder="0" scrolling="no" style="width: 100%;" src="{{videourls[0]}}"></iframe>
+                <!-- <iframe id="player" frameborder="0" scrolling="no" style="width: 100%;" src="{{videourls[0]}}"></iframe> -->
+                <a href="{{videourls[0]}}">動画はここから</a>
             </div>
             <div class="h-box">
                 <h1>{{ videotitle }}</h1>
@@ -122,7 +123,7 @@
 
         document.onkeydown = keydown;
         function keydown(key) {
-            var v = document.getElementById("player");
+            var v = document.getElementById("player");¥
 
             if (key.keyCode == 32 || key.keyCode == 75) {
                 if (v.paused == true) {
@@ -156,9 +157,6 @@
     　　　　　    delay: 300
             });
         
-        window.onload = () => {
-            window.location.href = {{videourls[0]}};
-        }
     </script>
 </body>
 
