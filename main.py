@@ -19,7 +19,7 @@ apis = [f"https://invidious.catspeed.cc/",f"https://youtube.privacyplz.org/",r"h
 url = requests.get(r'https://raw.githubusercontent.com/mochidukiyukimi/yuki-youtube-instance/main/instance.txt').text.rstrip()
 version = "1.0"
 
-apivideos = {"ytstream":"https://ytstream-download-youtube-videos.p.rapidapi.com/dl","related":"https://youtube-v31.p.rapidapi.com/search","info":"https://youtube-data-api-v33.p.rapidapi.com"}
+apivideos = {"related":"https://youtube-v31.p.rapidapi.com/search","info":"https://youtube-data-api-v33.p.rapidapi.com"}
 rapidapi_apikey = os.getenv("rapidapi_apikey","couldn't find")
 apichannels = []
 apicomments = []
@@ -134,13 +134,11 @@ def get_data(videoid,how):
             return "error"
         return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
     else:
-        t = json.loads(apirequest(apivideos["ytstream"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}'),json.loads('{"id":"' + videoid + '"}'),1))
-        print("t:" + json.dumps(t))
-        if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
-            return "error"
+        yt = YouTube(f"https://www.youtube.com/watch?v={videoid}")
+        
         r = json.loads(apirequest(apivideos["related"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}'),json.loads('{"relatedToVideoId":"' + videoid + '","part":"id,snippet","type":"video","maxResults":"6"}'),1))
         c = json.loads(apirequest(f"{apivideos['info']}/channels",json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-data-api-v33.p.rapidapi.com"}'),json.loads('{"part":"snippet","key":"AIzaS9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6a7b8c9dTr","id":"' + t["channelId"] + '"}'),1))
-        print(f"r:{json.dumps(r)},c:{json.dumps(c)}")
+        
         hentou = [
             [
                 {
@@ -151,12 +149,12 @@ def get_data(videoid,how):
                 } for i in r["items"]
             ],
             [
-                t["formats"][0]["url"]
+                yt.streams.filter(res="360p").first().url
             ],
-        t["description"].replace("\n", "<br>"),
-        t["title"],
-        t["channelId"],
-        t["channelTitle"],
+        yt.description.replace("\n", "<br>"),
+        yt.title,
+        yt.channel_id,
+        yt.author,
         c["items"][0]["snippet"]["thumbnails"]["default"]["url"]
         ]
         print(hentou)

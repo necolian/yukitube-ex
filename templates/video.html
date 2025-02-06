@@ -15,6 +15,13 @@
 </head>
 
 <body class="no-theme">
+
+    <div id="loader">
+    <div style="width: 100%; background-color: #f3f3f3;">
+        <div id="progress"></div>
+    </div>
+    </div>
+
     <span style="display:none" id="dark_mode_pref"></span>
     <div class="pure-g">
         <div class="pure-u-1 pure-u-md-2-24"></div>
@@ -134,29 +141,44 @@
             }
         }
     </script>
-    <script>$('#searchbox').autocomplete({
-                source: function (request, response) {
-                    {
-                        var url = "/suggest?keyword="+ request.term
-                        var xhr = new XMLHttpRequest();
-                        xhr.open("GET", url);
-                        xhr.onload = function() {
-                            response(JSON.parse(xhr.responseText));
-                        }
-                        xhr.send();
+    <script>
+    $('#searchbox').autocomplete({
+            source: function (request, response) {
+                {
+                    var url = "/suggest?keyword="+ request.term
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("GET", url);
+                    xhr.onload = function() {
+                        response(JSON.parse(xhr.responseText));
                     }
-                },
-    　　　　　    select: function(event, ui) {
-                        // 候補が選択されたときの処理
-                        // テキストボックスに選択したアイテムをセット
-                        $("#searchbox").val(ui.item.value);
-                        // フォームを送信
-                        $("#searchForm").submit(); // フォームを送信
-                        return false; // jQuery UIのデフォルトの動作をキャンセル
-                },
-    　　　　　    delay: 300
-            });
+                    xhr.send();
+                }
+            },
+            select: function(event, ui) {
+                    // 候補が選択されたときの処理
+                    // テキストボックスに選択したアイテムをセット
+                    $("#searchbox").val(ui.item.value);
+                    // フォームを送信
+                    $("#searchForm").submit(); // フォームを送信
+                    return false; // jQuery UIのデフォルトの動作をキャンセル
+            },
+    　　　　 delay: 300
+        });
         
+        function simulateProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                document.getElementById('progress').style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    document.getElementById('loader').style.display = 'none';
+                }
+            }, 500); // 500msごとに進捗を更新
+        }
+
+        window.onload = simulateProgress; // ページが読み込まれたら進捗を開始
+
     </script>
 </body>
 
