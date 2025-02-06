@@ -361,7 +361,7 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
 
 @app.get("/info-data")
 def info_data():
-    return {"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
+    return json.dumps({"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]})
 
 @app.get("/suggest")
 def suggest(keyword:str):
