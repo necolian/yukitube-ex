@@ -19,7 +19,7 @@ apis = [f"https://invidious.catspeed.cc/",f"https://youtube.privacyplz.org/",r"h
 url = requests.get(r'https://raw.githubusercontent.com/mochidukiyukimi/yuki-youtube-instance/main/instance.txt').text.rstrip()
 version = "1.0"
 
-apivideos = {"related":"https://youtube-v31.p.rapidapi.com/search","info":"https://youtube-data-api-v33.p.rapidapi.com"}
+apivideos = {"ytstream":"https://ytstream-download-youtube-videos.p.rapidapi.com/dl","related":"https://youtube-v31.p.rapidapi.com/search","info":"https://youtube-data-api-v33.p.rapidapi.com"}
 rapidapi_apikey = os.getenv("rapidapi_apikey","couldn't find")
 apichannels = []
 apicomments = []
@@ -127,18 +127,20 @@ def get_info(request):
 
 def get_data(videoid,how):
     global logs
-    how = 2 if how is None else how
-    if how == 2:
+    how = True if how is None else how
+    if how:
         t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid),"","",2))
         if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
             return "error"
         return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in t["formatStreams"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
     else:
-        yt = YouTube(f"https://www.youtube.com/watch?v={videoid}")
-        
+        t = json.loads(apirequest(apivideos["ytstream"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"}'),json.loads('{"id":"' + videoid + '"}'),1))
+        print("t:" + json.dumps(t))
+        if not t.get("adaptiveFormats") or len(t["adaptiveFormats"]) == 0:
+            return "error"
         r = json.loads(apirequest(apivideos["related"],json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-v31.p.rapidapi.com"}'),json.loads('{"relatedToVideoId":"' + videoid + '","part":"id,snippet","type":"video","maxResults":"6"}'),1))
         c = json.loads(apirequest(f"{apivideos['info']}/channels",json.loads('{"x-rapidapi-key": "' + rapidapi_apikey + '","x-rapidapi-host": "youtube-data-api-v33.p.rapidapi.com"}'),json.loads('{"part":"snippet","key":"AIzaS9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6a7b8c9dTr","id":"' + t["channelId"] + '"}'),1))
-        
+        print(f"r:{json.dumps(r)},c:{json.dumps(c)}")
         hentou = [
             [
                 {
@@ -149,12 +151,12 @@ def get_data(videoid,how):
                 } for i in r["items"]
             ],
             [
-                yt.streams.filter(res="360p").first().url
+                t["formats"][0]["url"]
             ],
-        yt.description.replace("\n", "<br>"),
-        yt.title,
-        yt.channel_id,
-        yt.author,
+        t["description"].replace("\n", "<br>"),
+        t["title"],
+        t["channelId"],
+        t["channelTitle"],
         c["items"][0]["snippet"]["thumbnails"]["default"]["url"]
         ]
         print(hentou)
@@ -289,7 +291,7 @@ def video(v:str,response: Response,request: Request,yuki: Union[str] = Cookie(No
         return redirect("/")
     response.set_cookie(key="yuki", value="True",max_age=7*24*60*60)
     videoid = v
-    t = get_data(videoid,1)
+    t = get_data(videoid,rapidapi)
     if (t == "error"):
             return template("error.html",{"request": request,"status_code":"502 - Bad Gateway","message": "ビデオ取得時のAPIエラー、再読み込みしてください。","home":False},status_code=502)
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
@@ -361,7 +363,7 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
 
 @app.get("/info-data")
 def info_data():
-    return json.dumps({"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]})
+    return {"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
 
 @app.get("/suggest")
 def suggest(keyword:str):
