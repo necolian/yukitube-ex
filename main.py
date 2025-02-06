@@ -149,7 +149,7 @@ def get_data(videoid,how):
                 } for i in r["items"]
             ],
             [
-                t["formats"][0]["url"]
+                yt.streams.filter(res="360p").first().url
             ],
         yt.description.replace("\n", "<br>"),
         yt.title,
