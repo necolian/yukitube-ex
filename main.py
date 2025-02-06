@@ -361,9 +361,9 @@ def viewlist(response: Response,request: Request,yuki: Union[str] = Cookie(None)
     response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
     return template("info.html",{"request": request,"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]})
 
-@app.get("/info-data", response_class=HTMLResponse)
-def info_data(response: Response,request: Request,yuki: Union[str] = Cookie(None)):
-    return {"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]}
+@app.get("/info-data")
+def info_data():
+    return json.dumps({"Youtube_API":apis[0],"Channel_API":apichannels[0],"Comments_API":apicomments[0]})
 
 @app.get("/suggest")
 def suggest(keyword:str):
