@@ -8,12 +8,17 @@ rapidapi_apikey = os.getenv("rapidapi_apikey","couldn't find")
 
 from fastapi import FastAPI, Request ,Cookie
 from fastapi.responses import HTMLResponse
+from fastapi.staticfales import StaticFiles
 from fastapi.templating import Jinja2Templates
+import json
 
 app = FastAPI()
 template = Jinja2Templates(directory="templates").TemplateResponse
 
 version = "3.0.0"
+
+app.mount("/css",StaticFiles(directory="css"),name="css")
+app.mount("/blog",StaticFiles(directory="blog"),name="blog")
 
 @app.get("/")
 def route(req: req, res: res, yuki: str = "false"):
