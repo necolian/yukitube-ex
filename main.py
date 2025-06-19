@@ -111,7 +111,7 @@ def get_data(videoid):
     apikeyslist = list(os.environ.get("apikey"))
 
     headers = {
-	    "x-rapidapi-key": apikeyslist[random.randint(0, apikeyslist.length)],
+	    "x-rapidapi-key": apikeyslist[random.randint(0, len(apikeyslist) - 1 )],
 	    "x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"
     }
 
