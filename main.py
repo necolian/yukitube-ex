@@ -151,7 +151,7 @@ def get_data(videoid,how):
                 } for i in r["items"]
             ],
             [
-                t["formats"][0]["url"]
+                t["formats"]["0"]["url"]
             ],
         t["description"].replace("\n", "<br>"),
         t["title"],
