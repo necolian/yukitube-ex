@@ -99,10 +99,10 @@ def get_info(request):
     return json.dumps([version,os.environ.get('RENDER_EXTERNAL_URL'),str(request.scope["headers"]),str(request.scope['router'])[39:-2]])
 
 def get_data(videoid):
-    global logs
-    t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
-    if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
-        return "error"
+    # global logs
+    # t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
+    # if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
+    #     return "error"
     
     url = "https://ytstream-download-youtube-videos.p.rapidapi.com/dl"
 
@@ -249,10 +249,10 @@ def home(response: Response,request: Request,yuki: Union[str] = Cookie(None)):
 
 @app.get('/watch', response_class=HTMLResponse)
 def video(v:str,response: Response,request: Request,yuki: Union[str] = Cookie(None),proxy: Union[str] = Cookie(None)):
-    # if not(check_cokie(yuki)):
-    #     return redirect("/")
-    # response.set_cookie(key="yuki", value="True",max_age=7*24*60*60)
-    # videoid = v
+    if not(check_cokie(yuki)):
+        return redirect("/")
+    response.set_cookie(key="yuki", value="True",max_age=7*24*60*60)
+    videoid = v
     t = get_data(videoid)
     # if (t == "error"):
     #         return template("error.html",{"request": request,"status_code":"502 - Bad Gateway","message": "ビデオ取得時のAPIエラー、再読み込みしてください。","home":False},status_code=502)
