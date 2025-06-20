@@ -98,6 +98,7 @@ def get_info(request):
     global version
     return json.dumps([version,os.environ.get('RENDER_EXTERNAL_URL'),str(request.scope["headers"]),str(request.scope['router'])[39:-2]])
 
+number = 1
 def get_data(videoid):
     # global logs
     # t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
@@ -111,9 +112,11 @@ def get_data(videoid):
     apikeyslist = list(os.environ.get("apikey"))
 
     headers = {
-	    "x-rapidapi-key": apikeyslist[random.randint(0, len(apikeyslist) - 1 )],
+	    "x-rapidapi-key": apikeyslist[number % len(apikeyslist)]
 	    "x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"
     }
+
+    number += 1
 
     res = json.loads(requests.get(url, headers=headers, params=querystring).text)
 
