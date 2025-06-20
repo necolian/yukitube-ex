@@ -122,7 +122,7 @@ def get_data(videoid):
 
     # return res.json()["formats"][0]["url"]
     # return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in res["formats"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
-    return [[],res["formats"][0]["url"],res["description"].replace("\n","<br>"),res["title"],res["channelId"],res["channelTitle"],""]
+    return [[],[res["formats"][0]["url"]],res["description"].replace("\n","<br>"),res["title"],res["channelId"],res["channelTitle"],""]
 
 
 def get_search(q, page):
