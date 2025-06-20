@@ -117,8 +117,10 @@ def get_data(videoid):
 
     res = requests.get(url, headers=headers, params=querystring)
 
-    return res.json()["formats"][0]["url"]
-    # return [{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in res["formats"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]
+    # return res.json()["formats"][0]["url"]
+    # return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in res["formats"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
+    return [[],list(reversed([i["url"] for i in res["formats"]]))[:2],res["description"].replace("\n","<br>"),res["title"],res["channelId"],res["channelTitle"],""]
+
 
 def get_search(q, page):
     errorlog = []
@@ -258,9 +260,10 @@ def video(v:str,response: Response,request: Request,yuki: Union[str] = Cookie(No
     t = get_data(videoid)
     # if (t == "error"):
     #         return template("error.html",{"request": request,"status_code":"502 - Bad Gateway","message": "ビデオ取得時のAPIエラー、再読み込みしてください。","home":False},status_code=502)
-    # response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
-    # return template('video.html', {"request": request,"videoid":videoid,"videourls":t[1],"res":t[0],"description":t[2],"videotitle":t[3],"authorid":t[4],"authoricon":t[6],"author":t[5],"proxy":proxy})
-    return RedirectResponse(t)
+    response.set_cookie("yuki","True",max_age=60 * 60 * 24 * 7)
+    return template('video.html', {"request": request,"videoid":videoid,"videourls":t[1],"res":t[0],"description":t[2],"videotitle":t[3],"authorid":t[4],"authoricon":t[6],"author":t[5],"proxy":proxy})
+    
+    # return RedirectResponse(t)
 
 @app.get("/search", response_class=HTMLResponse)
 def search(q: str, response: Response, request: Request, page: Union[int, None] = 1, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
