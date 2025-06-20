@@ -104,6 +104,8 @@ def get_data(videoid):
     # t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
     # if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
     #     return "error"
+
+    global number
     
     url = "https://ytstream-download-youtube-videos.p.rapidapi.com/dl"
 
