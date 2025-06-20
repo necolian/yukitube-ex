@@ -115,7 +115,7 @@ def get_data(videoid):
 	    "x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"
     }
 
-    res = requests.get(url, headers=headers, params=querystring).json()
+    res = json.loads(requests.get(url, headers=headers, params=querystring).json())
 
     # return res.json()["formats"][0]["url"]
     # return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in res["formats"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
