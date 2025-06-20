@@ -111,14 +111,12 @@ def get_data(videoid):
 
     querystring = {"id":videoid}
 
-    apikeyslist = list(os.environ.get("apikey"))
+    apikey = os.environ.get("apikey")
 
     headers = {
-	    "x-rapidapi-key": apikeyslist[number % len(apikeyslist)],
+	    "x-rapidapi-key": apikey,
 	    "x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"
     }
-
-    number += 1
 
     res = json.loads(requests.get(url, headers=headers, params=querystring).text)
 
