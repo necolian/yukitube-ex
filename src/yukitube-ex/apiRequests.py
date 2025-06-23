@@ -1,0 +1,87 @@
+import time
+import requests
+import json
+
+from readFile import readFile
+from APItimeoutError import APItimeoutError
+
+config = json.loads(readFile("config.json"))
+apis = readFile("./src/apis").splitlines()
+
+
+def is_json(json_str):
+    result = False
+    try:
+        json.loads(json_str)
+        result = True
+    except json.JSONDecodeError:
+        pass
+    return result
+
+
+def apirequest(url):
+    global apis
+    global max_time
+    starttime = time.time()
+    for api in apis:
+        if time.time() - starttime >= max_time - 1:
+            break
+        try:
+            res = requests.get(api+url, timeout=config["max_api_wait_time"])
+            if res.status_code == 200 and is_json(res.text):
+                print(api+url)
+                return res.text
+            else:
+                print(f"エラー:{api}")
+                apis.append(api)
+                apis.remove(api)
+        except:
+            print(f"タイムアウト:{api}")
+            apis.append(api)
+            apis.remove(api)
+    raise APItimeoutError("APIがタイムアウトしました")
+
+
+def apichannelrequest(url):
+    global apichannels
+    global max_time
+    starttime = time.time()
+    for api in apichannels:
+        if time.time() - starttime >= max_time - 1:
+            break
+        try:
+            res = requests.get(api+url, timeout=config["max_api_wait_time"])
+            if res.status_code == 200 and is_json(res.text):
+                return res.text
+            else:
+                print(f"エラー:{api}")
+                apichannels.append(api)
+                apichannels.remove(api)
+        except:
+            print(f"タイムアウト:{api}")
+            apichannels.append(api)
+            apichannels.remove(api)
+    raise APItimeoutError("APIがタイムアウトしました")
+
+
+def apicommentsrequest(url):
+    global apicomments
+    global max_time
+    starttime = time.time()
+    for api in apicomments:
+        if time.time() - starttime >= max_time - 1:
+            break
+        try:
+            res = requests.get(api+url, timeout=config["max_api_wait_time"])
+            if res.status_code == 200 and is_json(res.text):
+                return res.text
+            else:
+                print(f"エラー:{api}")
+                apicomments.append(api)
+                apicomments.remove(api)
+        except:
+            print(f"タイムアウト:{api}")
+            apicomments.append(api)
+            apicomments.remove(api)
+    raise APItimeoutError("APIがタイムアウトしました")
+
