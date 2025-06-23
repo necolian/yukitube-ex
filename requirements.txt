@@ -1,0 +1,6 @@
+jinja2
+requests
+fastapi
+uvicorn
+websockets
+pytubefix

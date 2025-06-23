@@ -1,0 +1,5 @@
+{
+	"version": "2.3.5",
+	"max_api_wait_time": 3,
+	"max_time": 10
+}
