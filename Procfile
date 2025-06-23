@@ -1,1 +1,1 @@
-web: uvicorn --port $PORT --host 0.0.0.0 src.yukitube-ex.__main__:app
+web: python ./src/yukitube-ex/__main__.py

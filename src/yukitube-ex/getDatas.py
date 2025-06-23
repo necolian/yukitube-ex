@@ -42,11 +42,15 @@ def get_data(videoid):
 
     res = json.loads(requests.get(url, headers=headers, params=querystring).text)
 
+    redirectedUrl = requests.get(
+        res["formats"][0]["url"],
+        allow_redirects=False).headers["Location"]
+
     # return res.json()["formats"][0]["url"]
     # return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in res["formats"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
     return [
         [],
-        [res["formats"][0]["url"]],
+        [redirectedUrl],
         res["description"].replace("\n", "<br>"),
         res["title"],
         res["channelId"],
