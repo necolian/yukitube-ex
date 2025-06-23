@@ -8,6 +8,10 @@ from APItimeoutError import APItimeoutError
 config = json.loads(readFile("config.json"))
 apis = readFile("./src/apis").splitlines()
 
+apichannels = []
+apicomments = []
+[[apichannels.append(i), apicomments.append(i)] for i in apis]
+
 
 def is_json(json_str):
     result = False
@@ -21,10 +25,10 @@ def is_json(json_str):
 
 def apirequest(url):
     global apis
-    global max_time
+    global config
     starttime = time.time()
     for api in apis:
-        if time.time() - starttime >= max_time - 1:
+        if time.time() - starttime >= config["max_time"] - 1:
             break
         try:
             res = requests.get(api+url, timeout=config["max_api_wait_time"])
@@ -44,10 +48,10 @@ def apirequest(url):
 
 def apichannelrequest(url):
     global apichannels
-    global max_time
+    global config
     starttime = time.time()
     for api in apichannels:
-        if time.time() - starttime >= max_time - 1:
+        if time.time() - starttime >= config["max_time"] - 1:
             break
         try:
             res = requests.get(api+url, timeout=config["max_api_wait_time"])
@@ -66,10 +70,10 @@ def apichannelrequest(url):
 
 def apicommentsrequest(url):
     global apicomments
-    global max_time
+    global config
     starttime = time.time()
     for api in apicomments:
-        if time.time() - starttime >= max_time - 1:
+        if time.time() - starttime >= config["max_time"] - 1:
             break
         try:
             res = requests.get(api+url, timeout=config["max_api_wait_time"])

@@ -34,15 +34,19 @@
                 <div class="pure-u-2-3">
 
                     <h3>情報 - 現在のapiサーバー</h3><br>
-                    <h4 id="connection">サーバーに接続中です…</h4>
                     <p>Youtube-API:<label id="youtubeapi"></label></p><br>
                     <p>Channel-API:<label id="channelapi"></label></p><br>
                     <p>Comment-API:<label id="commentsapi"></label></p><br>
                     
                 </div>
                 
-            </div>      
+            </div>
             <script>
+				
+			$("#youtubeapi").text = {{ Youtube_API }};
+			$("#channelapi").text = {{ Channel_API }};
+			$("#commentsapi").text = {{ Comment_API }};	
+				
             $('#searchbox').autocomplete({
                 source: function (request, response) {
                     {
@@ -66,32 +70,15 @@
                 delay: 300
             });
 
-            try {
-                const eventSource = new EventSource("/sse/info");
-            }catch(e){
-                $("connection").text("サーバーへの接続に失敗しました");
-            }
+			setInterval(async () => {
+				const res = await fetch("/api/info");
+				const data = res.data;
+				$("#youtubeapi").text = data["Youtube_API"];
+				$("#channelapi").text = data["Channel_API"];
+				$("#commentsapi").text = data["Comment_API"];
+			}, 5000)
 
-            eventSource.onopen = function(event) {
-                $("connection").text("サーバーに接続しました");
-            };
 
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                console.log(data);
-                $("youtubeapi").text(data.Youtube_API);
-                $("channelapi").text(data.Channel_API);
-                $("commentapi").text(data.Comments_API);
-            };
-
-            eventSource.onerror = function(event) {
-                $("connection").text("エラー:" + event);
-            };
-
-eventSource.onerror = function(event) {
-    console.error("SSE connection error:", event);
-};
-
-    </script>
+	</script>
 </body>
 </html>

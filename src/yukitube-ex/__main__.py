@@ -2,11 +2,9 @@ import json
 import requests
 import urllib.parse
 import time
-import asyncio
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi import Response, Cookie, Request
-from fastapi.responses import StreamingResponse
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.responses import RedirectResponse as redirect
 from fastapi.middleware.gzip import GZipMiddleware
@@ -47,7 +45,7 @@ def home(response: Response,
         return template("home.html", {"request": request})
 
     print(check_cokie(yuki))
-    return redirect("/word")
+    return template("index.html", {"request": request})
 
 
 @app.get('/watch', response_class=HTMLResponse)
@@ -90,6 +88,7 @@ def search(q: str,
            page: Union[int, None] = 1,
            yuki: Union[str] = Cookie(None),
            proxy: Union[str] = Cookie(None)):
+
     # クッキーの検証
     if not check_cokie(yuki):
         return redirect("/")
@@ -130,8 +129,10 @@ def hashtag(tag: str,
             request: Request,
             page: Union[int, None] = 1,
             yuki: Union[str] = Cookie(None)):
+
     if not(check_cokie(yuki)):
         return redirect("/")
+
     return redirect(f"/search?q={tag}")
 
 
@@ -141,9 +142,11 @@ def channel(channelid: str,
             request: Request,
             yuki: Union[str] = Cookie(None),
             proxy: Union[str] = Cookie(None)):
+
     if not(check_cokie(yuki)):
         return redirect("/")
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
+
     t = get_channel(channelid)
     return template("channel.html", {
         "request": request,
@@ -171,9 +174,11 @@ def playlist(list: str,
              page: Union[int, None] = 1,
              yuki: Union[str] = Cookie(None),
              proxy: Union[str] = Cookie(None)):
+
     if not(check_cokie(yuki)):
         return redirect("/")
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
+
     return template("search.html", {
         "request": request,
         "results": get_playlist(list, str(page)),
@@ -186,35 +191,27 @@ def playlist(list: str,
 def viewlist(response: Response,
              request: Request,
              yuki: Union[str] = Cookie(None)):
+
     global apis, apichannels, apicomments
+
     if not(check_cokie(yuki)):
         return redirect("/")
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
+
     return template("info.html", {
         "request": request,
         "Youtube_API": apis[0],
         "Channel_API": apichannels[0],
         "Comments_API": apicomments[0]})
 
-# infoページのSSE通信用
-@app.get("/sse/info")
-async def sse_info(request: Request):
-    async def event_stream():
-        try:
-            while True:
-                # データを送信
-                yield {
-                    "request": request,
-                    "Youtube_API": apis[0],
-                    "Channel_API": apichannels[0],
-                    "Comments_API": apicomments[0]
-                }
-                await asyncio.sleep(1)  # 1秒ごとにデータを送信
-                if await request.is_disconnected():  # 接続が切れた場合に終了
-                    break
-        except Exception as e:
-            print("エラー:", e)
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+@app.get("/api/info")
+def infoApi(request: Request):
+    return {
+        "Youtube_API": apis[0],
+        "Channel_API": apichannels[0],
+        "Comments_API": apicomments[0]
+    }
 
 
 @app.get("/suggest")
@@ -248,8 +245,10 @@ def view_bbs(request: Request,
              channel: Union[str, None] = "main",
              verify: Union[str, None] = "false",
              yuki: Union[str] = Cookie(None)):
+
     if not(check_cokie(yuki)):
         return redirect("/")
+
     return HTMLResponse(
         requests.get(
             fr"{url}bbs?name={urllib.parse.quote(name)}&seed={urllib.parse.quote(seed)}&channel={urllib.parse.quote(channel)}&verify={urllib.parse.quote(verify)}",
@@ -268,6 +267,7 @@ def bbs_api(request: Request,
             t: str,
             channel: Union[str, None] = "main",
             verify: Union[str, None] = "false"):
+
     print(fr"{url}bbs/api?t={urllib.parse.quote(t)}&verify={urllib.parse.quote(verify)}&channel={urllib.parse.quote(channel)}")
     return bbsapi_cached(verify, channel)
 
@@ -280,11 +280,14 @@ def write_bbs(request: Request,
               channel: Union[str, None] = "main",
               verify: Union[str, None] = "false",
               yuki: Union[str] = Cookie(None)):
+
     if not(check_cokie(yuki)):
         return redirect("/")
+
     t = requests.get(fr"{url}bbs/result?name={urllib.parse.quote(name)}&message={urllib.parse.quote(message)}&seed={urllib.parse.quote(seed)}&channel={urllib.parse.quote(channel)}&verify={urllib.parse.quote(verify)}&info={urllib.parse.quote(get_info(request))}",
                      cookies={"yuki": "True"},
                      allow_redirects=False)
+
     if t.status_code != 307:
         return HTMLResponse(t.text)
     return redirect(f"/bbs?name={urllib.parse.quote(name)}&seed={urllib.parse.quote(seed)}&channel={urllib.parse.quote(channel)}&verify={urllib.parse.quote(verify)}")
@@ -297,8 +300,10 @@ def how_cached():
 
 @app.get("/bbs/how", response_class=PlainTextResponse)
 def view_commonds(request: Request, yuki: Union[str] = Cookie(None)):
+
     if not(check_cokie(yuki)):
         return redirect("/")
+
     return how_cached()
 
 
@@ -316,16 +321,6 @@ def notFoundPage(request: Request, __):
         "message": "未実装か、存在しないページです。",
         "home": True},
         status_code=404)
-
-
-@app.exception_handler(504)
-def gatewayTimeOutPage(request: Request, __):
-    return template("error.html", {
-        "request": request,
-        "status_code": "504 - Gateway Timeout",
-        "message": "リクエストがタイムアウトしました",
-        "home": False},
-        status_code=504)
 
 
 @app.exception_handler(500)
