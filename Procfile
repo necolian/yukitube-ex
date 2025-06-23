@@ -1,1 +1,0 @@
-web: python ./src/yukitube-ex/__main__.py

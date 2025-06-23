@@ -1,3 +1,0 @@
-
-class APItimeoutError(Exception):
-    pass

@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: yukitube-ex
-    env: python
-    region: Oregon
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python ./src/yukitube-ex/__main__.py"
