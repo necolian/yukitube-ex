@@ -23,9 +23,7 @@ cookieにyuki=Trueを設定すると認証されます。
 ###注意
 v2.3.0からはrapidapiの登録し、以下のAPIをsubscribeする必要があります。
 - ytstream: https://rapidapi.com/ytjar/api/ytstream-download-youtube-videos
-- youtube v3: https://rapidapi.com/ytdlfree/api/youtube-v31
-- youtube data api v3: https://rapidapi.com/pawanjadam1/api/youtube-data-api-
-また、そのアカウントのAPIキーを、環境変数"rapidapi_apikey"に入れる必要があります。
+また、そのアカウントのAPIキーを、環境変数"apikey"に入れる必要があります。
 
 ### デプロイボタン
 <a href="https://render.com/deploy?repo=https://github.com/mochidukiyukimi/Yuki-Youtube-slim-2">    
