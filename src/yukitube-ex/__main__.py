@@ -45,7 +45,7 @@ def home(response: Response,
         return template("home.html", {"request": request})
 
     print(check_cokie(yuki))
-    return template("index.html", {"request": request})
+    return template("index.html", {"request": request, "version": config["version"]})
 
 
 @app.get('/watch', response_class=HTMLResponse)
