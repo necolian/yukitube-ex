@@ -52,9 +52,9 @@
             </div>
             <div class="pure-g">
                 <div class="pure-u-1 pure-u-lg-1-5">
-                    <a href="{{ videourls[0] }}" target="_blank">ダウンロード</a><br>
+                    <a href="{{ videourls[0] }}" download>ダウンロード</a><br>
                     <a
-                        href="javascript:{navigator.share({title: '動画を共有',text: '{{videotitle}}',url: location.protocol+'//'+document.domain+'/watch?v={{ videoid }}'+'&t='+Math.floor(document.getElementById('player').currentTime),})}">現時点の動画を共有</a><br>
+                        href="javascript:{navigator.share({title: '動画を共有',text: '{{videotitle}}',url: location.protocol+'//'+document.domain+'/watch?v={{ videoid }}'+'&t='+Math.floor($('player').currentTime),})}">現時点の動画を共有</a><br>
                     <a
                         href="javascript:{navigator.share({title: '動画を共有',text: '{{videotitle}}',url: location.href,})}">動画を共有</a><br>
                     <hr>
@@ -98,14 +98,14 @@
     <script>
         document.cookie = "yuki=True;max-age=2592000;";
         function getCookie(name) { let matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)")); return matches ? decodeURIComponent(matches[1]) : undefined; }
-        //document.getElementById("autonext").checked = getCookie("autonext");
-        function checkautoplay(){document.cookie = "autonext="+document.getElementById("autonext").checked+";max-age=2592000;";}
-        document.getElementById("loop").checked = getCookie("loop");
-        document.getElementById("player").loop = document.getElementById("loop").checked;
-        function changeloop(){document.cookie = "autonext="+document.getElementById("loop").checked+";max-age=2592000;";document.getElementById("player").loop = document.getElementById("loop").checked}
+        //$("autonext").checked = getCookie("autonext");
+        function checkautoplay(){document.cookie = "autonext="+$("autonext").checked+";max-age=2592000;";}
+        $("loop").checked = getCookie("loop");
+        $("player").loop = $("loop").checked;
+        function changeloop(){document.cookie = "autonext="+$("loop").checked+";max-age=2592000;";$("player").loop = $("loop").checked}
         //function sleep(waitMsec) {var startMsec = new Date();while (new Date() - startMsec < waitMsec);}
         function getUrlQueries() { var queryStr = window.location.search.slice(1); queries = {}; queryStr.split('&').forEach(function (queryStr) { var queryArr = queryStr.split('='); queries[queryArr[0]] = queryArr[1]; }); return queries; }
-        if (typeof getUrlQueries().t === "undefined") { t = 0; } else { document.getElementById("player").currentTime = getUrlQueries().t; }
+        if (typeof getUrlQueries().t === "undefined") { t = 0; } else { $("player").currentTime = getUrlQueries().t; }
 
         //コメント取得
         var getOK = true;
@@ -114,21 +114,21 @@
             xhr.open("GET", "/comments?v=" + getUrlQueries().v);
             xhr.onload = function () {
                 if (xhr.status != 500) {
-                    document.getElementById('comments').innerHTML = xhr.responseText;
+                    $('comments').innerHTML = xhr.responseText;
                     getOK = false;
                 }else {
-                    document.getElementById('comments').innerHTML = "エラーが発生しました。しばらくお待ちください。";
+                    $('comments').innerHTML = "エラーが発生しました。しばらくお待ちください。";
                 }
             }
             xhr.send();
         }
 
-        if (document.domain != "yukigennumber.ddo.jp") { document.getElementById("ads_box").innerHTML = ""; }
-        document.getElementById("player").style.maxHeight = document.documentElement.clientHeight * 0.8 + "px";
+        if (document.domain != "yukigennumber.ddo.jp") { $("ads_box").innerHTML = ""; }
+        $("player").style.maxHeight = document.documentElement.clientHeight * 0.8 + "px";
 
         document.onkeydown = keydown;
         function keydown(key) {
-            var v = document.getElementById("player");¥
+            var v = $("player");
 
             if (key.keyCode == 32 || key.keyCode == 75) {
                 if (v.paused == true) {
@@ -143,7 +143,11 @@
 		if (currentTime) $("#player").get(0).currentTime = currentTime;
 		
 		function setCookie() {
-			$.cookie(
+			
+		}
+        
+        window.addEventListener("timeupdate", () => {
+            $.cookie(
 				"currentTime",
 				$("#player").get(0).currentTime,
 				{
@@ -151,11 +155,8 @@
 					path: `/watch?v={{ videoid }}`
 				}
 			)
-		}
-		
-		window.addEventListener("beforeunload", setCookie());
-		window.addEventListener("pagehide", setCookie());
-		
+        });
+        
     </script>
     <script>
     $('#searchbox').autocomplete({
@@ -185,10 +186,10 @@
             let progress = 0;
             const interval = setInterval(() => {
                 progress += 10;
-                document.getElementById('progress').style.width = progress + '%';
+                $('progress').style.width = progress + '%';
                 if (progress >= 100) {
                     clearInterval(interval);
-                    document.getElementById('loader').style.display = 'none';
+                    $('loader').style.display = 'none';
                 }
             }, 500); // 500msごとに進捗を更新
         }
