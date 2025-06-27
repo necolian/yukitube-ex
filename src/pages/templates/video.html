@@ -109,6 +109,7 @@
 
         //画面が読み込まれたらコメントを取得
         window.onload = () => {
+            try {
             var getOK = true;
             var kaisu = 1;
             while(getOK) {
@@ -117,7 +118,7 @@
                 
                     const response = await fetch(`/comments?v={{ videoid }}`);
 
-                    if (!response.ok && kaisu <= 5) {
+                    if (!response.ok && kaisu < 5) {
                         $("comments").innerHTML = "エラーが発生しました";
                     } else if (response.ok) {
                         $("comments").innerHTML = await response.text();
@@ -126,11 +127,13 @@
                         $("comments").innerHTML = "コメントを取得できませんでした";
                     }
 
-                    if (kaisu >= 5) getOK = false;
+                    if (kaisu > 4) getOK = false;
 
-                    kaisu += 1;
+                    kaisu ++;
 
                 })();
+            } } catch {
+                console.error("えらあああ");
             }
         }
 
