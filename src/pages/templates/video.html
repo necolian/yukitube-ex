@@ -107,29 +107,31 @@
         function getUrlQueries() { var queryStr = window.location.search.slice(1); queries = {}; queryStr.split('&').forEach(function (queryStr) { var queryArr = queryStr.split('='); queries[queryArr[0]] = queryArr[1]; }); return queries; }
         if (typeof getUrlQueries().t === "undefined") { t = 0; } else { $("player").currentTime = getUrlQueries().t; }
 
-        //コメント取得
-        var getOK = true;
-        var kaisu = 1;
-        while(getOK) {
+        //画面が読み込まれたらコメントを取得
+        window.onload = () => {
+            var getOK = true;
+            var kaisu = 1;
+            while(getOK) {
 
-            (async () => {
+                (async () => {
                 
-                const response = await fetch(`/comments?v={{ videoid }}`);
+                    const response = await fetch(`/comments?v={{ videoid }}`);
 
-                if (response.status === 500 && kaisu <= 5) {
-                    $("comments").innerHTML = "エラーが発生しました";
-                } else if (response.status === 200) {
-                    $("comments").innerHTML = await response.text();
-                    getOK = false;
-                } else {
-                    $("comments").innerHTML = "コメントを取得できませんでした";
-                }
+                    if (!response.ok && kaisu <= 5) {
+                        $("comments").innerHTML = "エラーが発生しました";
+                    } else if (response.ok) {
+                        $("comments").innerHTML = await response.text();
+                        getOK = false;
+                    } else {
+                        $("comments").innerHTML = "コメントを取得できませんでした";
+                    }
 
-                if (kaisu <= 5) getOK = false;
+                    if (kaisu >= 5) getOK = false;
 
-                kaisu += 1;
+                    kaisu += 1;
 
-            })();
+                })();
+            }
         }
 
         if (document.domain != "yukigennumber.ddo.jp") { $("ads_box").innerHTML = ""; }
