@@ -109,21 +109,27 @@
 
         //コメント取得
         var getOK = true;
-        var kaisu = 0;
+        var kaisu = 1;
         while(getOK) {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/comments?v=" + getUrlQueries().v);
-            xhr.onload = function () {
-                if (xhr.status != 500) {
-                    $('comments').innerHTML = xhr.responseText;
+
+            (async () => {
+                
+                const response = await fetch(`/comments?v=${getUrlQueries()}`);
+
+                if (response.status === 500 && kaisu <= 5) {
+                    $("comments").innerHTML = "エラーが発生しました";
+                } else if (response.status === 200) {
+                    $("comments").innerHTML = await response.text();
                     getOK = false;
-                    kaisu += 1;
-                }else {
-                    $('comments').innerHTML = "エラーが発生しました。しばらくお待ちください。";
+                } else {
+                    $("comments").innerHTML = "コメントを取得できませんでした";
                 }
-            }
-            xhr.send();
-            if (kaisu >= 5) getOK = true;
+
+                if (kaisu <= 5) getOK = false;
+
+                kaisu += 1;
+
+            })();
         }
 
         if (document.domain != "yukigennumber.ddo.jp") { $("ads_box").innerHTML = ""; }
