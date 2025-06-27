@@ -149,7 +149,7 @@
 			
 		}
         
-        window.addEventListener("timeupdate", () => {
+        $("#player").addEventListener("timeupdate", () => {
             $.cookie(
 				"currentTime",
 				$("#player").get(0).currentTime,
