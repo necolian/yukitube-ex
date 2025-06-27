@@ -109,13 +109,16 @@
 
         //コメント取得
         var getOK = true;
+        var kaisu = 0;
         while(getOK) {
+            if (kaisu >= 5) break;
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "/comments?v=" + getUrlQueries().v);
             xhr.onload = function () {
                 if (xhr.status != 500) {
                     $('comments').innerHTML = xhr.responseText;
                     getOK = false;
+                    kaisu += 1;
                 }else {
                     $('comments').innerHTML = "エラーが発生しました。しばらくお待ちください。";
                 }
