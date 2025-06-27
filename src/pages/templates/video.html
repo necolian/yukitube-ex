@@ -111,7 +111,6 @@
         var getOK = true;
         var kaisu = 0;
         while(getOK) {
-            if (kaisu >= 5) break;
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "/comments?v=" + getUrlQueries().v);
             xhr.onload = function () {
@@ -124,6 +123,7 @@
                 }
             }
             xhr.send();
+            if (kaisu >= 5) getOK = true;
         }
 
         if (document.domain != "yukigennumber.ddo.jp") { $("ads_box").innerHTML = ""; }
