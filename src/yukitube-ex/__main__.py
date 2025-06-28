@@ -30,7 +30,7 @@ apicomments = []
 
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
-app.mount("/css", StaticFiles(directory="./src/pages/assets/css"), name="static")
+app.mount("/assets", StaticFiles(directory="./src/pages/assets"), name="static")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 template = Jinja2Templates(directory="./src/pages/templates").TemplateResponse
 
