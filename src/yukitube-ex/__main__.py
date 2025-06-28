@@ -99,10 +99,6 @@ def search(q: str,
 
         # resultsがdict型の場合の処理
         if isinstance(results, dict):
-            error_detail = results.get("error", "Unknown error occurred.")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Search API error: {error_detail}")
             return template("APIwait.html", {
                 "request": request
             }, status_code=500)
