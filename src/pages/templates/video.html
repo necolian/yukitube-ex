@@ -120,11 +120,14 @@
 
                     if (!response.ok && kaisu < 5) {
                         $("comments").innerHTML = "エラーが発生しました";
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     } else if (response.ok) {
                         $("comments").innerHTML = await response.text();
                         getOK = false;
+                        break;
                     } else {
                         $("comments").innerHTML = "コメントを取得できませんでした";
+                        break;
                     }
 
                     if (kaisu > 4) getOK = false;
