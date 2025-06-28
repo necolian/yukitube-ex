@@ -98,14 +98,15 @@
     <script>
         document.cookie = "yuki=True;max-age=2592000;";
         function getCookie(name) { let matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)")); return matches ? decodeURIComponent(matches[1]) : undefined; }
-        //$("autonext").checked = getCookie("autonext");
-        function checkautoplay(){document.cookie = "autonext="+$("autonext").checked+";max-age=2592000;";}
-        $("loop").checked = getCookie("loop");
-        $("player").loop = $("loop").checked;
-        function changeloop(){document.cookie = "autonext="+$("loop").checked+";max-age=2592000;";$("player").loop = $("loop").checked}
+        //$("#autonext").checked = getCookie("autonext");
+        function checkautoplay(){document.cookie = "autonext="+$("#autonext").checked+";max-age=2592000;";}
+        $("#loop").checked = getCookie("loop");
+        $("#player").loop = $("#loop").checked;
+        
+        function changeloop(){document.cookie = "autonext="+$("#loop").checked+";max-age=2592000;";$("#player").loop = $("#loop").checked}
         //function sleep(waitMsec) {var startMsec = new Date();while (new Date() - startMsec < waitMsec);}
         function getUrlQueries() { var queryStr = window.location.search.slice(1); queries = {}; queryStr.split('&').forEach(function (queryStr) { var queryArr = queryStr.split('='); queries[queryArr[0]] = queryArr[1]; }); return queries; }
-        if (typeof getUrlQueries().t === "undefined") { t = 0; } else { $("player").currentTime = getUrlQueries().t; }
+        if (typeof getUrlQueries().t === "undefined") { t = 0; } else { $("#player").currentTime = getUrlQueries().t; }
 
         //画面が読み込まれたらコメントを取得
         window.onload = () => {
@@ -119,14 +120,14 @@
                     const response = await fetch(`/comments?v={{ videoid }}`);
 
                     if (!response.ok && kaisu < 5) {
-                        $("comments").innerHTML = "エラーが発生しました";
+                        $("#comments").innerHTML = "エラーが発生しました";
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     } else if (response.ok) {
-                        $("comments").innerHTML = await response.text();
+                        $("#comments").innerHTML = await response.text();
                         getOK = false;
                         break;
                     } else {
-                        $("comments").innerHTML = "コメントを取得できませんでした";
+                        $("#comments").innerHTML = "コメントを取得できませんでした";
                         break;
                     }
 
@@ -140,12 +141,12 @@
             }
         }
 
-        if (document.domain != "yukigennumber.ddo.jp") { $("ads_box").innerHTML = ""; }
-        $("player").style.maxHeight = document.documentElement.clientHeight * 0.8 + "px";
+        if (document.domain != "yukigennumber.ddo.jp") { $("#ads_box").innerHTML = ""; }
+        $("#player").style.maxHeight = document.documentElement.clientHeight * 0.8 + "px";
 
         document.onkeydown = keydown;
         function keydown(key) {
-            var v = $("player");
+            var v = $("#player");
 
             if (key.keyCode == 32 || key.keyCode == 75) {
                 if (v.paused == true) {
