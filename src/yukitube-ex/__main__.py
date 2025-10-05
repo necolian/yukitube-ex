@@ -9,25 +9,20 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.responses import RedirectResponse as redirect
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from typing import Union
+from typing import Union, Optional
 from fastapi.templating import Jinja2Templates
 
 from APItimeoutError import APItimeoutError
-from readFile import readFile
 from check_cokie import check_cokie
-from getDatas import get_data, get_search, get_channel
-from getDatas import get_playlist, get_comments, get_level, get_info
+from getDatas import getVideoData, get_search, getChannel
+from getDatas import getPlaylist, getComments, getLevel, getBBSInfo
 from cache import cache
+from configs import configs
 
-config = json.loads(readFile("./config.json"))
-apis = readFile("./src/apis").splitlines()
+config = configs.config
+[apis, apicomments, apichannels] = [configs.apis, configs.apicomments, configs.apichannels]
 
 url = requests.get(r'https://raw.githubusercontent.com/mochidukiyukimi/yuki-youtube-instance/main/instance.txt').text.rstrip()
-
-apichannels = []
-apicomments = []
-[[apichannels.append(i), apicomments.append(i)] for i in apis]
-
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/assets", StaticFiles(directory="./src/pages/assets"), name="static")
@@ -38,7 +33,7 @@ template = Jinja2Templates(directory="./src/pages/templates").TemplateResponse
 @app.get("/", response_class=HTMLResponse)
 def home(response: Response,
          request: Request,
-         yuki: Union[str] = Cookie(None)):
+         yuki: str = Cookie(None)):
 
     if check_cokie(yuki):
         response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
@@ -52,15 +47,15 @@ def home(response: Response,
 def video(v: str,
           response: Response,
           request: Request,
-          yuki: Union[str] = Cookie(None),
-          proxy: Union[str] = Cookie(None)):
+          yuki: str = Cookie(None),
+          proxy: str = Cookie(None)):
 
     if not(check_cokie(yuki)):
         return redirect("/")
 
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
     videoid = v
-    t = get_data(videoid)
+    t = getVideoData(videoid)
 
     # if (t == "error"):
     #   return template("error.html",{"request": request,"status_code":"502 - Bad Gateway","message": "ビデオ取得時のAPIエラー、再読み込みしてください。","home":False},status_code=502)
@@ -85,9 +80,9 @@ def video(v: str,
 def search(q: str,
            response: Response,
            request: Request,
-           page: Union[int, None] = 1,
-           yuki: Union[str] = Cookie(None),
-           proxy: Union[str] = Cookie(None)):
+           page: int = 1,
+           yuki: str = Cookie(None),
+           proxy: str = Cookie(None)):
 
     # クッキーの検証
     if not check_cokie(yuki):
@@ -123,8 +118,8 @@ def search(q: str,
 def hashtag(tag: str,
             response: Response,
             request: Request,
-            page: Union[int, None] = 1,
-            yuki: Union[str] = Cookie(None)):
+            page: int | None = 1,
+            yuki: str = Cookie(None)):
 
     if not(check_cokie(yuki)):
         return redirect("/")
@@ -136,14 +131,14 @@ def hashtag(tag: str,
 def channel(channelid: str,
             response: Response,
             request: Request,
-            yuki: Union[str] = Cookie(None),
-            proxy: Union[str] = Cookie(None)):
+            yuki: str = Cookie(None),
+            proxy: str = Cookie(None)):
 
     if not(check_cokie(yuki)):
         return redirect("/")
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
 
-    t = get_channel(channelid)
+    t = getChannel(channelid)
     return template("channel.html", {
         "request": request,
         "results": t[0],
@@ -155,7 +150,7 @@ def channel(channelid: str,
 
 @app.get("/answer", response_class=HTMLResponse)
 def set_cokie(q: str):
-    t = get_level(q)
+    t = getLevel(q)
     if t > 5:
         return f"level{t}\n推測を推奨する"
     elif t == 0:
@@ -168,8 +163,8 @@ def playlist(list: str,
              response: Response,
              request: Request,
              page: Union[int, None] = 1,
-             yuki: Union[str] = Cookie(None),
-             proxy: Union[str] = Cookie(None)):
+             yuki: str = Cookie(None),
+             proxy: str = Cookie(None)):
 
     if not(check_cokie(yuki)):
         return redirect("/")
@@ -177,7 +172,7 @@ def playlist(list: str,
 
     return template("search.html", {
         "request": request,
-        "results": get_playlist(list, str(page)),
+        "results": getPlaylist(list, str(page)),
         "word": "",
         "next": f"/playlist?list={list}",
         "proxy": proxy})
@@ -186,7 +181,7 @@ def playlist(list: str,
 @app.get("/info", response_class=HTMLResponse)
 def viewlist(response: Response,
              request: Request,
-             yuki: Union[str] = Cookie(None)):
+             yuki: str = Cookie(None)):
 
     global apis, apichannels, apicomments
 
@@ -222,7 +217,7 @@ def suggest(keyword: str):
 def comments(request: Request, v: str):
     return template("comments.html", {
         "request": request,
-        "comments": get_comments(v)
+        "comments": getComments(v)
     })
 
 
@@ -236,35 +231,35 @@ def thumbnail(v: str):
 
 @app.get("/bbs", response_class=HTMLResponse)
 def view_bbs(request: Request,
-             name: Union[str, None] = "",
-             seed: Union[str, None] = "",
-             channel: Union[str, None] = "main",
-             verify: Union[str, None] = "false",
-             yuki: Union[str] = Cookie(None)):
+             name: Optional[str] = "",
+             seed: Optional[str] = "",
+             channel: Optional[str] = "main",
+             verify: Optional[str] = "false",
+             yuki: str = Cookie(None)):
 
     if not(check_cokie(yuki)):
         return redirect("/")
 
     return HTMLResponse(
         requests.get(
-            fr"{url}bbs?name={urllib.parse.quote(name)}&seed={urllib.parse.quote(seed)}&channel={urllib.parse.quote(channel)}&verify={urllib.parse.quote(verify)}",
+            fr"{url}bbs?name={urllib.parse.quote(name or '')}&seed={urllib.parse.quote(seed or '')}&channel={urllib.parse.quote(channel or '')}&verify={urllib.parse.quote(verify or '')}",
             cookies={"yuki": "True"}).text)
 
 
 @cache(seconds=5)
-def bbsapi_cached(verify, channel):
+def bbsapi_cached(verify: Optional[str], channel: Optional[str]) -> str:
     return requests.get(
-        fr"{url}bbs/api?t={urllib.parse.quote(str(int(time.time()*1000)))}&verify={urllib.parse.quote(verify)}&channel={urllib.parse.quote(channel)}",
+        fr"{url}bbs/api?t={urllib.parse.quote(str(int(time.time()*1000)).encode())}&verify={urllib.parse.quote((verify or '').encode())}&channel={urllib.parse.quote((channel or '').encode())}",
         cookies={"yuki": "True"}).text
 
 
 @app.get("/bbs/api", response_class=HTMLResponse)
 def bbs_api(request: Request,
             t: str,
-            channel: Union[str, None] = "main",
-            verify: Union[str, None] = "false"):
+            channel: Optional[str] = "main",
+            verify: Optional[str] = "false"):
 
-    print(fr"{url}bbs/api?t={urllib.parse.quote(t)}&verify={urllib.parse.quote(verify)}&channel={urllib.parse.quote(channel)}")
+    print(fr"{url}bbs/api?t={urllib.parse.quote(t or '')}&verify={urllib.parse.quote(verify or '')}&channel={urllib.parse.quote(channel or '')}")
     return bbsapi_cached(verify, channel)
 
 
@@ -272,21 +267,21 @@ def bbs_api(request: Request,
 def write_bbs(request: Request,
               name: str = "",
               message: str = "",
-              seed: Union[str, None] = "",
-              channel: Union[str, None] = "main",
-              verify: Union[str, None] = "false",
-              yuki: Union[str] = Cookie(None)):
+              seed: Optional[str] = "",
+              channel: Optional[str] = "main",
+              verify: Optional[str] = "false",
+              yuki: str = Cookie(None)):
 
     if not(check_cokie(yuki)):
         return redirect("/")
 
-    t = requests.get(fr"{url}bbs/result?name={urllib.parse.quote(name)}&message={urllib.parse.quote(message)}&seed={urllib.parse.quote(seed)}&channel={urllib.parse.quote(channel)}&verify={urllib.parse.quote(verify)}&info={urllib.parse.quote(get_info(request))}",
+    t = requests.get(fr"{url}bbs/result?name={urllib.parse.quote(name)}&message={urllib.parse.quote(message)}&seed={urllib.parse.quote(seed or "")}&channel={urllib.parse.quote(channel or "")}&verify={urllib.parse.quote(verify or "")}&info={urllib.parse.quote(getBBSInfo(request))}",
                      cookies={"yuki": "True"},
                      allow_redirects=False)
 
     if t.status_code != 307:
         return HTMLResponse(t.text)
-    return redirect(f"/bbs?name={urllib.parse.quote(name)}&seed={urllib.parse.quote(seed)}&channel={urllib.parse.quote(channel)}&verify={urllib.parse.quote(verify)}")
+    return redirect(f"/bbs?name={urllib.parse.quote(name or '')}&seed={urllib.parse.quote(seed or '')}&channel={urllib.parse.quote(channel or '')}&verify={urllib.parse.quote(verify or '')}")
 
 
 @cache(seconds=30)
@@ -295,7 +290,7 @@ def how_cached():
 
 
 @app.get("/bbs/how", response_class=PlainTextResponse)
-def view_commonds(request: Request, yuki: Union[str] = Cookie(None)):
+def view_commonds(request: Request, yuki: str = Cookie(None)):
 
     if not(check_cokie(yuki)):
         return redirect("/")
@@ -310,7 +305,7 @@ def instances():
 
 
 @app.exception_handler(404)
-def notFoundPage(request: Request, __):
+def notFoundPage(request: Request):
     return template("error.html", {
         "request": request,
         "status_code": "404 - Not Found",
@@ -320,7 +315,7 @@ def notFoundPage(request: Request, __):
 
 
 @app.exception_handler(500)
-def waitPage(request: Request, __):
+def waitPage(request: Request):
     return template("APIwait.html", {"request": request}, status_code=500)
 
 

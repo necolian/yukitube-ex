@@ -3,15 +3,18 @@ import os
 import requests
 import urllib.parse
 import datetime
+from fastapi import Request
+from typing import Any
 
 from apiRequests import apirequest, apichannelrequest, apicommentsrequest
 from APItimeoutError import APItimeoutError
+from configs import configs
 
+[apicomments, apichannels] = [configs.apicomments, configs.apichannels]
 
-def get_info(request):
-    global version
+def getBBSInfo(request: Request) -> str:
     return json.dumps([
-        version,
+        None,
         os.environ.get('RENDER_EXTERNAL_URL'),
         str(request.scope["headers"]),
         str(request.scope['router'])[39:-2]
@@ -20,8 +23,7 @@ def get_info(request):
 
 number = 1
 
-
-def get_data(videoid):
+def getVideoData(videoid: str) -> list[Any]:
     # global logs
     # t = json.loads(apirequest(r"api/v1/videos/"+ urllib.parse.quote(videoid)))
     # if not t.get("formatStreams") or len(t["formatStreams"]) == 0:
@@ -33,14 +35,14 @@ def get_data(videoid):
 
     querystring = {"id": videoid}
 
-    apikey = os.environ.get("apikey")
+    apikey = str(os.environ.get("apikey"))
 
-    headers = {
+    headers: dict[str, str] = {
         "x-rapidapi-key": apikey,
         "x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"
     }
 
-    res = json.loads(requests.get(url, headers=headers, params=querystring).text)
+    res: dict[str, Any] = json.loads(requests.get(url, headers=headers, params=querystring).text)
 
     redirectedUrl = requests.get(
         res["formats"][0]["url"],
@@ -48,7 +50,8 @@ def get_data(videoid):
 
     # return res.json()["formats"][0]["url"]
     # return [[{"id":i["videoId"],"title":i["title"],"authorId":i["authorId"],"author":i["author"]} for i in t["recommendedVideos"]],list(reversed([i["url"] for i in res["formats"]]))[:2],t["descriptionHtml"].replace("\n","<br>"),t["title"],t["authorId"],t["author"],t["authorThumbnails"][-1]["url"]]
-    return [
+
+    returnData: list[Any] = [
         [],
         [redirectedUrl],
         res["description"].replace("\n", "<br>"),
@@ -57,20 +60,21 @@ def get_data(videoid):
         res["channelTitle"],
         ""
     ]
+    return returnData
 
 
-def get_search(q, page):
-    errorlog = []
+def get_search(q: str, page: int) -> list[Any]:
+    errorlog: list[str] = []
     try:
         response = apirequest(
             fr"api/v1/search?q={urllib.parse.quote(q)}&page={page}&hl=jp")
 
         t = json.loads(response)
 
-        results = []
+        results: list[Any] = []
         for item in t:
             try:
-                results.append(load_search(item))
+                results.append(parseSearch(item))
             except ValueError as ve:
                 # エラー詳細をログに記録して、処理を続ける
                 errorlog.append(f"Error processing item: {str(ve)}")
@@ -81,10 +85,10 @@ def get_search(q, page):
         raise ValueError("Failed to decode JSON response.")
     except Exception as e:
         errorlog.append(f"API request error: {str(e)}")
-        return {"error": "API request error."}
+        return [{"error": "API request error."}]
 
 
-def load_search(i):
+def parseSearch(i: dict[str, Any]) -> dict[str, Any]:
     if i["type"] == "video":
         return {
             "title": i["title"],
@@ -119,7 +123,7 @@ def load_search(i):
         }
 
 
-def get_channel(channelid):
+def getChannel(channelid: str) -> list[Any]:
     global apichannels
     t = json.loads(
         apichannelrequest(r"api/v1/channels/" +
@@ -145,7 +149,7 @@ def get_channel(channelid):
         }]
 
 
-def get_playlist(listid, page):
+def getPlaylist(listid: str, page: str) -> list[Any]:
     t = json.loads(apirequest(r"/api/v1/playlists/" +
                               urllib.parse.quote(listid) +
                               "?page="+urllib.parse.quote(page)))["videos"]
@@ -159,7 +163,7 @@ def get_playlist(listid, page):
         for i in t]
 
 
-def get_comments(videoid):
+def getComments(videoid: str) -> list[Any]:
     t = json.loads(apicommentsrequest(r"api/v1/comments/" +
                                       urllib.parse.quote(videoid) +
                                       "?hl=jp"))["comments"]
@@ -171,14 +175,13 @@ def get_comments(videoid):
         for i in t]
 
 
-def get_replies(videoid, key):
+def getReplies(videoid: str, key: str) -> dict[str, Any]:
     t = json.loads(apicommentsrequest(
-          fr"api/v1/comments/{videoid}?hmac_key={key}&hl=jp&format=html"))
-    ["contentHtml"]
+          fr"api/v1/comments/{videoid}?hmac_key={key}&hl=jp&format=html"))["contentHtml"]
     return t
 
 
-def get_level(word):
+def getLevel(word: str) -> int:
     for i1 in range(1, 13):
         with open(f'Level{i1}.txt', 'r', encoding='UTF-8', newline='\n') as f:
             if word in [i2.rstrip("\r\n") for i2 in f.readlines()]:

@@ -2,18 +2,15 @@ import time
 import requests
 import json
 
-from readFile import readFile
 from APItimeoutError import APItimeoutError
+from configs import configs
 
-config = json.loads(readFile("config.json"))
-apis = readFile("./src/apis").splitlines()
+config = configs.config
 
-apichannels = []
-apicomments = []
-[[apichannels.append(i), apicomments.append(i)] for i in apis]
+[apis, apicomments, apichannels] = [configs.apis, configs.apicomments, configs.apichannels]
 
 
-def is_json(json_str):
+def is_json(json_str: str) -> bool:
     result = False
     try:
         json.loads(json_str)
@@ -23,7 +20,7 @@ def is_json(json_str):
     return result
 
 
-def apirequest(url):
+def apirequest(url: str) -> str:
     global apis
     global config
     starttime = time.time()
@@ -46,7 +43,7 @@ def apirequest(url):
     raise APItimeoutError("APIがタイムアウトしました")
 
 
-def apichannelrequest(url):
+def apichannelrequest(url: str) -> str:
     global apichannels
     global config
     starttime = time.time()
@@ -68,7 +65,7 @@ def apichannelrequest(url):
     raise APItimeoutError("APIがタイムアウトしました")
 
 
-def apicommentsrequest(url):
+def apicommentsrequest(url: str) -> str:
     global apicomments
     global config
     starttime = time.time()
