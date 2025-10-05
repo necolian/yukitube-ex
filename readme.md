@@ -12,7 +12,7 @@ cookieにyuki=Trueを設定すると認証されます。
 ちなみにこれは[vercel](https://vercel.com)でも作成できます。
 →necolianの[yukitube-vercel-runner](https://github.com/necolian/yukitube-vercel-runner)で大体他のyukiも動作させられます
 
-### Renderを使用する場合の手順  (出来ない可能性大)
+### Renderを使用する場合の手順
 1~4の作業をやらないと、自動でURLがyuki-tangolevel-[4桁の英数字].onrender.comになります。  
 1.githubアカウントを作成する  
 2.リポジトリを作る(名前はなんでもいい)(プライベートリポジトリにすることをおすすめします)  
