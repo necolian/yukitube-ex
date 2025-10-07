@@ -4,13 +4,14 @@ import requests
 import urllib.parse
 import datetime
 from fastapi import Request
-from typing import Any
+from typing import Any, Optional
 
 from apiRequests import apirequest, apichannelrequest, apicommentsrequest
 from APItimeoutError import APItimeoutError
 from configs import configs
 
-[apicomments, apichannels] = [configs.apicomments, configs.apichannels]
+configs.init()
+config, apicomments, apichannels = configs.config, configs.apicomments, configs.apichannels
 
 def getBBSInfo(request: Request) -> str:
     return json.dumps([
@@ -35,9 +36,13 @@ def getVideoData(videoid: str) -> list[Any]:
 
     querystring = {"id": videoid}
 
-    apikey = str(os.environ.get("apikey"))
+    apikey: Optional[str] = ""
+    if not config["apikey"] == "":
+        apikey = config["apikey"]
+    else:
+        apikey = os.environ.get("apikey")
 
-    headers: dict[str, str] = {
+    headers: dict[str, Optional[str]] = {
         "x-rapidapi-key": apikey,
         "x-rapidapi-host": "ytstream-download-youtube-videos.p.rapidapi.com"
     }
@@ -63,11 +68,13 @@ def getVideoData(videoid: str) -> list[Any]:
     return returnData
 
 
-def get_search(q: str, page: int) -> list[Any]:
+def get_search(q: str, page: Optional[int]) -> list[Any]:
     errorlog: list[str] = []
+    pageInt: int = 1
+    if not page is None : pageInt = page
     try:
         response = apirequest(
-            fr"api/v1/search?q={urllib.parse.quote(q)}&page={page}&hl=jp")
+            fr"api/v1/search?q={urllib.parse.quote(q)}&page={pageInt}&hl=jp")
 
         t = json.loads(response)
 

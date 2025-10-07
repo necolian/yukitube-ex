@@ -5,9 +5,8 @@ import json
 from APItimeoutError import APItimeoutError
 from configs import configs
 
-config = configs.config
-
-[apis, apicomments, apichannels] = [configs.apis, configs.apicomments, configs.apichannels]
+configs.init()
+config, apis, apicomments, apichannels = configs.config, configs.apis, configs.apicomments, configs.apichannels
 
 
 def is_json(json_str: str) -> bool:
@@ -26,7 +25,7 @@ def apirequest(url: str) -> str:
     starttime = time.time()
     for api in apis:
         if time.time() - starttime >= config["max_time"] - 1:
-            break
+            raise APItimeoutError("APIがタイムアウトしました")
         try:
             res = requests.get(api+url, timeout=config["max_api_wait_time"])
             if res.status_code == 200 and is_json(res.text):

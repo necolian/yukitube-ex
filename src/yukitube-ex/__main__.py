@@ -19,6 +19,7 @@ from getDatas import getPlaylist, getComments, getLevel, getBBSInfo
 from cache import cache
 from configs import configs
 
+configs.init()
 config = configs.config
 [apis, apicomments, apichannels] = [configs.apis, configs.apicomments, configs.apichannels]
 
@@ -34,7 +35,7 @@ template = Jinja2Templates(directory="./src/pages/templates").TemplateResponse
 def home(response: Response,
          request: Request,
          yuki: str = Cookie(None)):
-
+    
     if check_cokie(yuki):
         response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
         return template("home.html", {"request": request})
@@ -109,9 +110,14 @@ def search(q: str,
     except HTTPException as e:
         # HTTP例外としてハンドリング
         raise e
+    except APItimeoutError as e:
+        APIwait(request, e)
     except Exception as e:
         # 他の予期しない例外を処理
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 
 @app.get("/hashtag/{tag}")
@@ -322,6 +328,5 @@ def waitPage(request: Request):
 @app.exception_handler(APItimeoutError)
 def APIwait(request: Request, exception: APItimeoutError):
     return template("APIwait.html", {"request": request}, status_code=500)
-
 
 uvicorn.run(app, port=3000, host="0.0.0.0")
